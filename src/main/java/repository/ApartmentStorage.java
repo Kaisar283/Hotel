@@ -1,6 +1,6 @@
-package Repository;
+package repository;
 
-import Models.Apartment;
+import models.Apartment;
 
 import java.util.*;
 
@@ -54,8 +54,9 @@ public class ApartmentStorage {
         return apartments.reversed();
     }
 
-    public void sortedApartmentByReservationStatus(){
-        apartments.sort(Comparator.comparing(Apartment::isReserved).reversed());
+    public List<Apartment> sortedApartmentByReservationStatus(){
+        apartments.sort(Comparator.comparing(Apartment::isReserved));
+        return apartments.reversed();
     }
 
 }

@@ -1,8 +1,8 @@
-package Services;
+package services;
 
-import Models.Apartment;
-import Models.Client;
-import Repository.ApartmentStorage;
+import models.Apartment;
+import models.Client;
+import repository.ApartmentStorage;
 
 import java.util.*;
 
@@ -57,8 +57,8 @@ public class ApartmentService {
     }
 
     public List<Apartment> getApartmentSortedByReservationStatus(int page, int pageSize){
-        apartmentStorage.sortedApartmentByReservationStatus();
-        return pagingApartments(page, pageSize);
+        List<Apartment> apartments = apartmentStorage.sortedApartmentByReservationStatus();
+        return pagingApartments(page, pageSize, apartments);
     }
 
     public List<Apartment> getApartmentSortedByClientName(int page, int pageSize){

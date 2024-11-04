@@ -1,4 +1,4 @@
-package Models;
+package models;
 
 public class Apartment {
     private static int counter = 1;

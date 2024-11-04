@@ -1,21 +1,24 @@
 package console;
 
-import Models.Apartment;
-import Models.Client;
-import Repository.ApartmentStorage;
-import Services.ApartmentService;
+import models.Apartment;
+import models.Client;
+import services.ApartmentService;
 
 import java.util.List;
 import java.util.Scanner;
 
 public class UserConsole {
+    private static final int MIN_COMMAND_PARTS_LENGTH = 2;
+    private static final int PAGE_INDEX = 2;
+    private static final int PAGE_SIZE_INDEX = 3;
     private final ApartmentService apartmentService = new ApartmentService();
-
     private final Scanner scanner = new Scanner(System.in);
 
     public void start(){
-        System.out.println("Welcome to the Apartment Management System!");
-        System.out.println("Type 'help' for a list of commands.");
+        System.out.println("""
+                              Welcome to the Apartment Management System!
+                              Type 'help' for a list of commands.
+                            """);
 
         boolean running = true;
 
@@ -43,7 +46,7 @@ public class UserConsole {
     }
 
     private void registerApartment(String[] commandParts) {
-        if(commandParts.length < 2){
+        if(commandParts.length < MIN_COMMAND_PARTS_LENGTH){
             System.out.println("Usage: register <price>");
             return;
         }
@@ -58,7 +61,7 @@ public class UserConsole {
     }
 
     private void reserveApartment(String[] commandParts){
-        if (commandParts.length < 2){
+        if (commandParts.length < MIN_COMMAND_PARTS_LENGTH){
             System.out.println("Usage: reserve <apartmentId> <clientName");
         }
 
@@ -73,7 +76,7 @@ public class UserConsole {
     }
 
     private void releaseApartment(String[] commandParts){
-        if (commandParts.length < 2){
+        if (commandParts.length < MIN_COMMAND_PARTS_LENGTH){
             System.out.println("Usage: release <apartmentId>");
             return;
         }
@@ -90,10 +93,10 @@ public class UserConsole {
         int page = 1;
         int pageSize = 5;
 
-        if (commandParts.length >= 2){
+        if (commandParts.length >= PAGE_INDEX){
             page = Integer.parseInt(commandParts[1]);
         }
-        if(commandParts.length >= 3){
+        if(commandParts.length >= PAGE_SIZE_INDEX){
             pageSize = Integer.parseInt(commandParts[2]);
         }
 
@@ -111,15 +114,15 @@ public class UserConsole {
     private void sortedApartment(String[] commandParts){
         int page = 1;
         int pageSize = 5;
-        if (commandParts.length < 1){
+        if (commandParts.length < MIN_COMMAND_PARTS_LENGTH){
             System.out.println("Usage: sorted by <field> <page> <pageSize>");
             return;
         }
 
-        if(commandParts.length >= 4){
+        if(commandParts.length >= PAGE_INDEX + 2){
             page = Integer.parseInt(commandParts[3]);
         }
-        if(commandParts.length >= 5){
+        if(commandParts.length >= PAGE_SIZE_INDEX + 2){
             pageSize = Integer.parseInt(commandParts[4]);
         }
 
@@ -137,13 +140,16 @@ public class UserConsole {
         }
     }
     private void showHelp(){
-        System.out.println("Available commands:");
-        System.out.println("register <price>                      - Register a new apartment with the given price");
-        System.out.println("reserve <id> <name>                   - Reserve an apartment for a client");
-        System.out.println("release <id>                          - Release a reservation for an apartment");
-        System.out.println("list <page> <pageSize>                - List apartments with optional pagination");
-        System.out.println("sorted by <field> <page> <pageSize>   - List apartments sorted by fields. Field parameters: id, price, isReserved, reservedBy");
-        System.out.println("help                                  - Show this help message");
-        System.out.println("exit                                  - Exit the application");
+        System.out.println("""
+                Available commands:
+                register <price>                        - Register a new apartment with the given price.
+                reserve <id> <name>                     - Reserve an apartment for a client.
+                release <id>                            - Release a reservation for an apartment.
+                list [<page> <pageSize>]                - List apartments with optional pagination.
+                sorted by <field> [<page> <pageSize>]   - List apartments sorted by a specified fields.
+                                                          Fields: id, price, isReserved, reservedBy
+                help                                    - Show this help message.
+                exit                                    - Exit the application.
+                """);
     }
 }
