@@ -1,4 +1,4 @@
-package models;
+package kz.andersen.java_intensive_13.models;
 
 public class Client {
     private String name;

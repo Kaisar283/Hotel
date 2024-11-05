@@ -1,8 +1,9 @@
-package console;
+package kz.andersen.java_intensive_13.console;
 
-import models.Apartment;
-import models.Client;
-import services.ApartmentService;
+import kz.andersen.java_intensive_13.enums.ResultCode;
+import kz.andersen.java_intensive_13.models.Apartment;
+import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.services.ApartmentService;
 
 import java.util.List;
 import java.util.Scanner;
@@ -69,7 +70,12 @@ public class UserConsole {
             int apartmentId = Integer.parseInt(commandParts[1]);
             String clientName = commandParts[2];
             Client client = new Client(clientName);
-            apartmentService.reserveApartment(apartmentId, client);
+            ResultCode resultCode = apartmentService.reserveApartment(apartmentId, client);
+            switch (resultCode){
+                case NOT_FOUND -> System.out.println("Apartment with id " + apartmentId + " is not found");
+                case RESERVED -> System.out.println("Apartment already reserved.");
+                case SUCCESS -> System.out.println("Apartment successfully reserved by " + client.getName());
+            }
         }catch (NumberFormatException e){
             System.out.println("Invalid apartment ID format. Please enter a valid number.");
         }
@@ -83,7 +89,12 @@ public class UserConsole {
 
         try{
             int apartmentId = Integer.parseInt(commandParts[1]);
-            apartmentService.releaseApartment(apartmentId);
+            ResultCode resultCode = apartmentService.releaseApartment(apartmentId);
+            switch (resultCode){
+                case NOT_FOUND -> System.out.println("Apartment with id " + apartmentId + " not found");
+                case NOT_RESERVED -> System.out.println("This apartment with id " + apartmentId + " is not reserved.");
+                case SUCCESS -> System.out.println("Apartment with id " + apartmentId + " released.");
+            }
         }catch (NumberFormatException e){
             System.out.println("Invalid apartment ID format. Please enter a valid number.");
         }
@@ -100,7 +111,7 @@ public class UserConsole {
             pageSize = Integer.parseInt(commandParts[2]);
         }
 
-        List<Apartment> apartments = apartmentService.pagingApartments(page, pageSize);
+        List<Apartment> apartments = apartmentService.pagingApartments(page, pageSize, apartmentService.getAllApartments());
         if (apartments.isEmpty()){
             System.out.println("No apartments found on this page.");
         }else {

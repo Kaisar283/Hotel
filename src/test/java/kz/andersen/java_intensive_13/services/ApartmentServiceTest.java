@@ -1,4 +1,6 @@
-import static org.junit.jupiter.api.Assertions.*;
+package kz.andersen.java_intensive_13.services;
+
+
 class ApartmentServiceTest {
-  
+
 }
