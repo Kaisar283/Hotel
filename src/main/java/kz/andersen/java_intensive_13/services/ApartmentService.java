@@ -4,16 +4,22 @@ import kz.andersen.java_intensive_13.enums.ResultCode;
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.Client;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class ApartmentService {
 
-    private final ApartmentStorage apartmentStorage = new ApartmentStorage();
+    private final ApartmentStorage apartmentStorage;
+
+    public ApartmentService() {
+        this.apartmentStorage = new ApartmentStorage();
+    }
 
     public List<Apartment> getAllApartments(){
         return apartmentStorage.getApartments();
     }
+
     public int registerApartment(double price){
         Apartment apartment = new Apartment(price);
         apartmentStorage.addApartment(apartment);
@@ -70,7 +76,7 @@ public class ApartmentService {
         return pagingApartments(page, pageSize, apartments);
     }
 
-    public List<Apartment> pagingApartments(int page, int pageSize, List<Apartment> apartments){
+    public List<Apartment> pagingApartments(int page, int pageSize, @NotNull List<Apartment> apartments){
         int totalApartments = apartments.size();
         int startIndex = (page - 1) * pageSize;
         int endIndex = Math.min(startIndex + pageSize, totalApartments);

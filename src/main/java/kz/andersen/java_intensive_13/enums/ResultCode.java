@@ -6,5 +6,4 @@ public enum ResultCode {
     NOT_RESERVED,
     RESERVED,
     SUCCESS
-
 }

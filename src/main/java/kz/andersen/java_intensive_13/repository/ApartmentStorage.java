@@ -6,20 +6,7 @@ import java.util.*;
 
 public class ApartmentStorage {
 
-    private static List<Apartment> apartments = new ArrayList<>();
-
-    static {
-        apartments.add(new Apartment(1000));
-        apartments.add(new Apartment(2000));
-        apartments.add(new Apartment(1300));
-        apartments.add(new Apartment(1500));
-        apartments.add(new Apartment(1900));
-        apartments.add(new Apartment(2200));
-        apartments.add(new Apartment(4400));
-        apartments.add(new Apartment(4000));
-        apartments.add(new Apartment(5000));
-        apartments.add(new Apartment(3500));
-    }
+    private final List<Apartment> apartments = new ArrayList<>();
 
     /**
      * Method: add apartment to original list.
@@ -56,8 +43,7 @@ public class ApartmentStorage {
      * @return a new ArrayList sorted by Apartment price, in ASC order.
      */
     public List<Apartment> sortApartmentByPrice(){
-        List<Apartment> apartmentList = new ArrayList<>();
-        Collections.copy(apartmentList, apartments);
+        List<Apartment> apartmentList = new ArrayList<>(Collections.unmodifiableList(apartments));
         apartmentList.sort(Comparator.comparingDouble(Apartment::getPrice));
         return apartmentList;
     }
@@ -66,8 +52,7 @@ public class ApartmentStorage {
      * @return a new ArrayList sorted by Apartment ID, in ASC order.
      */
     public List<Apartment> sortApartmentById(){
-        List<Apartment> apartmentList = new ArrayList<>();
-        Collections.copy(apartmentList, apartments);
+        List<Apartment> apartmentList = new ArrayList<>(Collections.unmodifiableList(apartments));
         apartmentList.sort(Comparator.comparingInt(Apartment::getId));
         return apartmentList;
     }
