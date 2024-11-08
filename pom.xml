@@ -76,7 +76,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>kz.andersen.java_intensive_13.EntryPoint</mainClass> <!-- Replace with your main class -->
+                                <mainClass>kz.andersen.java_intensive_13.EntryPoint</mainClass>
                             </manifest>
                         </archive>
                     </configuration>
