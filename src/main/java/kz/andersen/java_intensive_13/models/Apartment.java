@@ -1,8 +1,10 @@
-package models;
+package kz.andersen.java_intensive_13.models;
+
+import java.util.Objects;
 
 public class Apartment {
     private static int counter = 1;
-    private final int id;
+    private int id;
     private double price;
     private boolean isReserved;
     private Client reservedBy;
@@ -23,6 +25,10 @@ public class Apartment {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id){
+        this.id = id;
     }
 
     public double getPrice() {
@@ -57,5 +63,18 @@ public class Apartment {
                 ", isReserved = " + isReserved +
                 ", reservedBy = " + reservedBy +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Apartment apartment = (Apartment) o;
+        return id == apartment.id && Double.compare(price, apartment.price) == 0 && isReserved == apartment.isReserved && Objects.equals(reservedBy, apartment.reservedBy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, price, isReserved, reservedBy);
     }
 }
