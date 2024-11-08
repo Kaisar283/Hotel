@@ -16,6 +16,10 @@ public class ApartmentService {
         this.apartmentStorage = apartmentStorage;
     }
 
+    public ApartmentService(){
+        this.apartmentStorage = new ApartmentStorage();
+    }
+
     public List<Apartment> getAllApartments(){
         return apartmentStorage.getApartments();
     }

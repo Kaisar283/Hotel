@@ -5,7 +5,8 @@ import kz.andersen.java_intensive_13.services.ApartmentService;
 
 public class EntryPoint {
     public static void main(String[] args) {
-        UserConsole console = new UserConsole();
+        ApartmentService apartmentService = new ApartmentService();
+        UserConsole console = new UserConsole(apartmentService);
         console.start();
     }
 }

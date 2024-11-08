@@ -64,7 +64,7 @@ public class UserConsole {
             double price = Double.parseDouble(commandParts[1]);
             int id = apartmentService.registerApartment(price);
             System.out.println("Apartment registered with price: " + price + ", apartment ID: " + id);
-        }catch (NumberFormatException e){
+        }catch (Exception e){
             System.out.println("Invalid price format. Please enter a valid number.");
         }
     }
@@ -85,7 +85,7 @@ public class UserConsole {
                 case RESERVED -> System.out.println("Apartment already reserved.");
                 case SUCCESS -> System.out.println("Apartment successfully reserved by " + client.getName());
             }
-        }catch (NumberFormatException e){
+        }catch (Exception e){
             System.out.println("Invalid apartment ID format. Please enter a valid number.");
         }
     }
@@ -104,7 +104,7 @@ public class UserConsole {
                 case NOT_RESERVED -> System.out.println("This apartment with id " + apartmentId + " is not reserved.");
                 case SUCCESS -> System.out.println("Apartment with id " + apartmentId + " released.");
             }
-        }catch (NumberFormatException e){
+        }catch (Exception e){
             System.out.println("Invalid apartment ID format. Please enter a valid number.");
         }
     }
@@ -129,7 +129,7 @@ public class UserConsole {
                     System.out.println(apartment.toString());
                 }
             }
-        }catch (NumberFormatException e){
+        }catch (Exception e){
             System.out.println("Invalid page format. Please enter a valid number.");
         }
     }
