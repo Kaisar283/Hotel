@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class Apartment {
     private static int counter = 1;
-    private final int id;
+    private int id;
     private double price;
     private boolean isReserved;
     private Client reservedBy;
@@ -25,6 +25,10 @@ public class Apartment {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id){
+        this.id = id;
     }
 
     public double getPrice() {

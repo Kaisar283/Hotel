@@ -12,8 +12,8 @@ public class ApartmentService {
 
     private final ApartmentStorage apartmentStorage;
 
-    public ApartmentService() {
-        this.apartmentStorage = new ApartmentStorage();
+    public ApartmentService(ApartmentStorage apartmentStorage) {
+        this.apartmentStorage = apartmentStorage;
     }
 
     public List<Apartment> getAllApartments(){

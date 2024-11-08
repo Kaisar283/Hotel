@@ -54,7 +54,7 @@ public class UserConsole {
         scanner.close();
     }
 
-    private void registerApartment(String @NotNull [] commandParts) {
+    private void registerApartment(String [] commandParts) {
         if(commandParts.length < MIN_COMMAND_PARTS_LENGTH){
             System.out.println("Usage: register <price>");
             return;
@@ -69,7 +69,7 @@ public class UserConsole {
         }
     }
 
-    private void reserveApartment(String @NotNull [] commandParts){
+    private void reserveApartment(String [] commandParts){
         if (commandParts.length < MIN_COMMAND_PARTS_LENGTH){
             System.out.println("Usage: reserve <apartmentId> <clientName");
             return;
@@ -90,7 +90,7 @@ public class UserConsole {
         }
     }
 
-    private void releaseApartment(String @NotNull [] commandParts){
+    private void releaseApartment(String [] commandParts){
         if (commandParts.length < MIN_COMMAND_PARTS_LENGTH){
             System.out.println("Usage: release <apartmentId>");
             return;
@@ -109,7 +109,7 @@ public class UserConsole {
         }
     }
 
-    private void listApartment(String @NotNull [] commandParts){
+    private void listApartment(String [] commandParts){
         int page = 1;
         int pageSize = 5;
         try{
@@ -134,7 +134,7 @@ public class UserConsole {
         }
     }
 
-    private void sortedApartment(String @NotNull [] commandParts){
+    private void sortedApartment(String [] commandParts){
         int page = 1;
         int pageSize = 5;
         if (commandParts.length <= MIN_COMMAND_PARTS_LENGTH){

@@ -2,6 +2,7 @@ package kz.andersen.java_intensive_13.console;
 
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.repository.ApartmentStorage;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class UserConsoleTest {
 
     private UserConsole userConsole;
 
-    private final ApartmentService apartmentService = new ApartmentService();
+    private ApartmentService apartmentService;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -37,18 +38,8 @@ class UserConsoleTest {
         this.userConsole = new UserConsole(apartmentService);
     }
 
-    public void prepareData(){
-        Client alice = new Client("Alice");
-        int apartment1 = apartmentService.registerApartment(1000);
-        int apartment2 = apartmentService.registerApartment(3000);
-        int apartment3 = apartmentService.registerApartment(2000);
-        int apartment4 = apartmentService.registerApartment(4000);
-        apartmentService.reserveApartment(apartment2, alice);
-
-    }
-
     @Test
-    public void testRegisterApartment() {
+    public void registerApartment_successfullyRegistred() {
         String simulatedInput = "register 1500\nexit\n";
         provideInput(simulatedInput);
         userConsole.start();
@@ -59,7 +50,7 @@ class UserConsoleTest {
     }
 
     @Test
-    public void testInvalidPriceFormat() {
+    public void registerApartment_invalidPriceFormat() {
         String simulatedInput = "register abc\nexit\n";
         provideInput(simulatedInput);
 
@@ -68,6 +59,18 @@ class UserConsoleTest {
         String output = outContent.toString();
 
         assertThat(output).contains("Invalid price format. Please enter a valid number.");
+    }
+
+    @Test
+    public void registerApartment_tooShortCommand() {
+        String simulatedInput = "register\nexit\n";
+        provideInput(simulatedInput);
+
+        userConsole.start();
+
+        String output = outContent.toString();
+
+        assertThat(output).contains("Usage: register <price>");
     }
 
     @Test
@@ -254,5 +257,16 @@ class UserConsoleTest {
         String output = outContent.toString();
 
         assertThat(output).contains("Exiting the system. Goodbye!");
+    }
+
+    private void prepareData(){
+        ApartmentStorage apartmentStorage = new ApartmentStorage();
+        this.apartmentService = new ApartmentService(apartmentStorage);
+        Client alice = new Client("Alice");
+        int apartment1 = apartmentService.registerApartment(1000);
+        int apartment2 = apartmentService.registerApartment(3000);
+        int apartment3 = apartmentService.registerApartment(2000);
+        int apartment4 = apartmentService.registerApartment(4000);
+        apartmentService.reserveApartment(apartment2, alice);
     }
 }
