@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class CollectorManager<T> implements StateSerializer<T>{
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void saveState(T stateCollector, String filePath) {

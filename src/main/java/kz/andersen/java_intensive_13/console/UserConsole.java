@@ -195,40 +195,39 @@ public class UserConsole {
 
         String field = commandParts[2].toLowerCase();
         switch (field) {
-            case ("id"):
+            case ("id") -> {
                 List<Apartment> apartmentsSortedById =
                         apartmentService.getApartmentsSortedById(page, pageSize);
                 collectorManager.saveState(StateCollector.collectState(apartmentsSortedById,
                         ApplicationOperations.SORTING_BY_ID,
                         Arrays.toString(commandParts), ResultCode.SUCCESS), filePath);
                 apartmentsSortedById.forEach(apartment -> System.out.println(apartment.toString()));
-                break;
-            case ("price"):
+            }
+            case ("price") -> {
                 List<Apartment> apartmentsSortedByPrice =
                         apartmentService.getApartmentsSortedByPrice(page, pageSize);
                 collectorManager.saveState(StateCollector.collectState(apartmentsSortedByPrice,
                         ApplicationOperations.SORTING_BY_PRICE,
                         Arrays.toString(commandParts), ResultCode.SUCCESS), filePath);
                 apartmentsSortedByPrice.forEach(apartment -> System.out.println(apartment.toString()));
-                break;
-            case ("isreserved"):
+            }
+            case ("isreserved") -> {
                 List<Apartment> apartmentsSortedByReservationStatus =
                         apartmentService.getApartmentSortedByReservationStatus(page, pageSize);
                 collectorManager.saveState(StateCollector.collectState(apartmentsSortedByReservationStatus,
                         ApplicationOperations.SORTING_BY_RESERVATION_STATUS,
                         Arrays.toString(commandParts), ResultCode.SUCCESS), filePath);
                 apartmentsSortedByReservationStatus.forEach(apartment -> System.out.println(apartment.toString()));
-                break;
-            case ("reservedby"):
+            }
+            case ("reservedby") -> {
                 List<Apartment> apartmentsSortedByClientName =
                         apartmentService.getApartmentSortedByClientName(page, pageSize);
                 collectorManager.saveState(StateCollector.collectState(apartmentsSortedByClientName,
                         ApplicationOperations.SORTING_BY_CLIENT_NAME,
                         Arrays.toString(commandParts), ResultCode.SUCCESS), filePath);
                 apartmentsSortedByClientName.forEach(apartment -> System.out.println(apartment.toString()));
-                break;
-            default:
-                System.out.println("Unknown command. Type 'help' for a list of command.");
+            }
+            default -> System.out.println("Unknown command. Type 'help' for a list of command.");
         }
     }
 

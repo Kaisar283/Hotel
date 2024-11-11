@@ -16,7 +16,7 @@ public class StateCollector {
 
     private String inputCommand;
 
-    private ResultCode resultCode = null;
+    private ResultCode resultCode;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime dateTime;

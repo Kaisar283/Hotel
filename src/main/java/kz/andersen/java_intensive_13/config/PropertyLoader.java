@@ -84,9 +84,9 @@ public class PropertyLoader {
         String[] keys = targetKey.split("\\.");
 
         Optional<Map<String, Object>> optionalMap = Arrays.stream(keys, 0, keys.length - 1)
-                .reduce(Optional.of(map), (optMap, key) -> optMap
-                        .filter(m -> m.get(key) instanceof Map)
-                        .map(m -> (Map<String, Object>) m.get(key)), (a, b) -> b);
+                .reduce(Optional.of(map), (optionalCurrentMap, currentKey) -> optionalCurrentMap
+                        .filter(currentMap -> currentMap.get(currentKey) instanceof Map)
+                        .map(currentMap -> (Map<String, Object>) currentMap.get(currentKey)), (a, b) -> b);
 
         optionalMap.ifPresent(finalMap -> finalMap.put(keys[keys.length - 1], newValue));
     }
