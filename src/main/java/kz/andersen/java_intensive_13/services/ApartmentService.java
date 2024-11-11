@@ -20,6 +20,10 @@ public class ApartmentService {
         this.apartmentStorage = new ApartmentStorage();
     }
 
+    public Optional<Apartment> getApartment(int apartmentId){
+        return apartmentStorage.getApartmentById(apartmentId);
+    }
+
     public List<Apartment> getAllApartments(){
         return apartmentStorage.getApartments();
     }

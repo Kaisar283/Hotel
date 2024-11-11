@@ -1,11 +1,13 @@
 package kz.andersen.java_intensive_13.console;
 
+import kz.andersen.java_intensive_13.config.PropertyLoader;
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.Client;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -238,7 +240,7 @@ class UserConsoleTest {
     }
 
     @Test
-    public void testUnknownCommand() {
+    public void unknownCommand() {
         String simulatedInput = "unknownCommand\nexit\n";
         provideInput(simulatedInput);
         userConsole.start();
@@ -249,7 +251,7 @@ class UserConsoleTest {
     }
 
     @Test
-    public void testExitCommand() {
+    public void exitCommand() {
         String simulatedInput = "exit\n";
         provideInput(simulatedInput);
         userConsole.start();
@@ -258,6 +260,8 @@ class UserConsoleTest {
 
         assertThat(output).contains("Exiting the system. Goodbye!");
     }
+
+
 
     private void prepareData(){
         ApartmentStorage apartmentStorage = new ApartmentStorage();
