@@ -1,0 +1,7 @@
+app:
+  State:
+    filePath: .\app-files\app-state\collectedState.json
+  models:
+    apartment:
+      reservation-status:
+        changeable: 'true'
