@@ -9,8 +9,12 @@ public class Apartment {
     private boolean isReserved;
     private Client reservedBy;
 
-    public Apartment(double price) {
+    public Apartment() {
         this.id = counter++;
+    }
+
+    public Apartment(double price) {
+        this();
         this.price = price;
         this.isReserved = false;
     }

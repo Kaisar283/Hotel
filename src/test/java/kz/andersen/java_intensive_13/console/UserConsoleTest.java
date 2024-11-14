@@ -265,12 +265,12 @@ class UserConsoleTest {
 
     private void prepareData(){
         ApartmentStorage apartmentStorage = new ApartmentStorage();
-        this.apartmentService = new ApartmentService(apartmentStorage);
+        this.apartmentService = new ApartmentService();
         Client alice = new Client("Alice");
-        int apartment1 = apartmentService.registerApartment(1000);
-        int apartment2 = apartmentService.registerApartment(3000);
-        int apartment3 = apartmentService.registerApartment(2000);
-        int apartment4 = apartmentService.registerApartment(4000);
-        apartmentService.reserveApartment(apartment2, alice);
+//        int apartment1 = apartmentService.registerApartment(1000);
+//        int apartment2 = apartmentService.registerApartment(3000);
+//        int apartment3 = apartmentService.registerApartment(2000);
+//        int apartment4 = apartmentService.registerApartment(4000);
+//        apartmentService.reserveApartment(apartment2, alice);
     }
 }

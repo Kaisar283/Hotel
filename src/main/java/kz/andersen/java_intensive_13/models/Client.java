@@ -3,6 +3,9 @@ package kz.andersen.java_intensive_13.models;
 public class Client {
     private String name;
 
+    public Client() {
+    }
+
     public Client(String name) {
         this.name = name;
     }

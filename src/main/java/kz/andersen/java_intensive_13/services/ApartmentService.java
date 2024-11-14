@@ -1,6 +1,8 @@
 package kz.andersen.java_intensive_13.services;
 
 import kz.andersen.java_intensive_13.enums.ResultCode;
+import kz.andersen.java_intensive_13.exception.AlreadyReservedException;
+import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.Client;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
@@ -10,14 +12,12 @@ import java.util.*;
 
 public class ApartmentService {
 
+    private static volatile ApartmentService instance;
+
     private final ApartmentStorage apartmentStorage;
 
-    public ApartmentService(ApartmentStorage apartmentStorage) {
-        this.apartmentStorage = apartmentStorage;
-    }
-
     public ApartmentService(){
-        this.apartmentStorage = new ApartmentStorage();
+        this.apartmentStorage = ApartmentStorage.getInstance();
     }
 
     public Optional<Apartment> getApartment(int apartmentId){
@@ -28,18 +28,17 @@ public class ApartmentService {
         return apartmentStorage.getApartments();
     }
 
-    public int registerApartment(double price){
-        Apartment apartment = new Apartment(price);
+    public int registerApartment(Apartment apartment){
         apartmentStorage.addApartment(apartment);
         return apartment.getId();
     }
 
-    public ResultCode reserveApartment(int apartmentId, Client client){
+    public ResultCode reserveApartment(int apartmentId, Client client) throws ResourceNotFoundException, AlreadyReservedException{
         Optional<Apartment> apartmentOptional = apartmentStorage.getApartmentById(apartmentId);
         if(apartmentOptional.isEmpty()){
-            return ResultCode.NOT_FOUND;
+            throw new ResourceNotFoundException("Apartment with " + apartmentId + " is not found!");
         } else if (apartmentOptional.get().isReserved()) {
-            return ResultCode.RESERVED;
+            throw new AlreadyReservedException("Apartment with " + apartmentId + " already reserved!");
         } else {
             Apartment apartment = apartmentStorage.getApartmentById(apartmentId).get();
             apartment.setIsReserved(true);
@@ -51,7 +50,7 @@ public class ApartmentService {
     public ResultCode releaseApartment(int apartmentId){
         Optional<Apartment> apartmentOptional = apartmentStorage.getApartmentById(apartmentId);
         if(apartmentOptional.isEmpty()){
-            return ResultCode.NOT_FOUND;
+            throw new ResourceNotFoundException("Apartment with " + apartmentId + " is not found!");
         }else {
             Apartment apartment = apartmentStorage.getApartmentById(apartmentId).get();
             if(!apartment.isReserved()){

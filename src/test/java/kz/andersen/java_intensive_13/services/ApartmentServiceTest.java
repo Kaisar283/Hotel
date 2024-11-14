@@ -95,7 +95,8 @@ class ApartmentServiceTest{
             apartmentInstance.setId(1);
             return null;
         }).when(apartmentStorage).addApartment(any(Apartment.class));
-        int registerApartment = apartmentService.registerApartment(1500.0);
+        Apartment apartment = new Apartment(1500);
+        int registerApartment = apartmentService.registerApartment(apartment);
         assertEquals(expectedId, registerApartment);
         verify(apartmentStorage).addApartment(any(Apartment.class));
     }
