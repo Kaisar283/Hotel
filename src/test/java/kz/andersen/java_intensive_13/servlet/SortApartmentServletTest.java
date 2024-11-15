@@ -1,16 +1,13 @@
 package kz.andersen.java_intensive_13.servlet;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import kz.andersen.java_intensive_13.exception.ExceptionHandler;
+import kz.andersen.java_intensive_13.handler.ExceptionHandler;
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

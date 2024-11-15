@@ -92,16 +92,4 @@ public class Apartment {
     public int hashCode() {
         return Objects.hash(id, price, isReserved, reservedBy);
     }
-
-    public static void main(String[] args) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        Apartment apartment = new Apartment(1, 4000);
-
-        String json = objectMapper.writeValueAsString(apartment);
-        System.out.println(json);
-
-        Apartment apartment1 = objectMapper.readValue(json, Apartment.class);
-        System.out.println(apartment1);
-    }
 }

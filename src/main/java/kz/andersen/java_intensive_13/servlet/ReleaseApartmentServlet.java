@@ -8,10 +8,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kz.andersen.java_intensive_13.enums.ResultCode;
 import kz.andersen.java_intensive_13.exception.AlreadyReservedException;
-import kz.andersen.java_intensive_13.exception.ExceptionHandler;
+import kz.andersen.java_intensive_13.handler.ExceptionHandler;
 import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.Client;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 
 import java.io.BufferedReader;

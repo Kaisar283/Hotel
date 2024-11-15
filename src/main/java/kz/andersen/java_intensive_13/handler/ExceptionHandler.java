@@ -1,9 +1,11 @@
-package kz.andersen.java_intensive_13.exception;
+package kz.andersen.java_intensive_13.handler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import kz.andersen.java_intensive_13.exception.AlreadyReservedException;
+import kz.andersen.java_intensive_13.exception.ApiError;
+import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
+import kz.andersen.java_intensive_13.exception.ResourceProcessingException;
 
 import java.io.IOException;
 
