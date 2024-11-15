@@ -12,8 +12,6 @@ import java.util.*;
 
 public class ApartmentService {
 
-    private static volatile ApartmentService instance;
-
     private final ApartmentStorage apartmentStorage;
 
     public ApartmentService(){
@@ -36,9 +34,9 @@ public class ApartmentService {
     public ResultCode reserveApartment(int apartmentId, Client client) throws ResourceNotFoundException, AlreadyReservedException{
         Optional<Apartment> apartmentOptional = apartmentStorage.getApartmentById(apartmentId);
         if(apartmentOptional.isEmpty()){
-            throw new ResourceNotFoundException("Apartment with " + apartmentId + " is not found!");
-        } else if (apartmentOptional.get().isReserved()) {
-            throw new AlreadyReservedException("Apartment with " + apartmentId + " already reserved!");
+            throw new ResourceNotFoundException("Apartment with id " + apartmentId + " is not found!");
+        } else if (apartmentOptional.get().getIsReserved()) {
+            throw new AlreadyReservedException("Apartment with id " + apartmentId + " already reserved!");
         } else {
             Apartment apartment = apartmentStorage.getApartmentById(apartmentId).get();
             apartment.setIsReserved(true);
@@ -50,10 +48,10 @@ public class ApartmentService {
     public ResultCode releaseApartment(int apartmentId){
         Optional<Apartment> apartmentOptional = apartmentStorage.getApartmentById(apartmentId);
         if(apartmentOptional.isEmpty()){
-            throw new ResourceNotFoundException("Apartment with " + apartmentId + " is not found!");
+            throw new ResourceNotFoundException("Apartment with id " + apartmentId + " is not found!");
         }else {
             Apartment apartment = apartmentStorage.getApartmentById(apartmentId).get();
-            if(!apartment.isReserved()){
+            if(!apartment.getIsReserved()){
                 return ResultCode.NOT_RESERVED;
             }else {
                 apartment.setIsReserved(false);

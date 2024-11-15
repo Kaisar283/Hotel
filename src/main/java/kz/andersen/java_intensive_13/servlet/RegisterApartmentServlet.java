@@ -17,8 +17,18 @@ import java.util.List;
 
 @WebServlet("/apartment/register")
 public class RegisterApartmentServlet extends HttpServlet {
-    private final ApartmentService apartmentService = new ApartmentService();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ApartmentService apartmentService;
+    private final ObjectMapper objectMapper;
+
+    public RegisterApartmentServlet(ApartmentService apartmentService, ObjectMapper objectMapper) {
+        this.apartmentService = apartmentService;
+        this.objectMapper = objectMapper;
+    }
+
+    public RegisterApartmentServlet(){
+        this.apartmentService = new ApartmentService();
+        this.objectMapper = new ObjectMapper();
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

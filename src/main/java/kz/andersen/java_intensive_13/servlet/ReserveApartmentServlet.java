@@ -20,9 +20,23 @@ import java.net.http.HttpClient;
 
 @WebServlet("/apartment/reserve")
 public class ReserveApartmentServlet extends HttpServlet {
-    ApartmentService apartmentService = new ApartmentService();
-    ObjectMapper objectMapper = new ObjectMapper();
-    ExceptionHandler exceptionHandler = new ExceptionHandler();
+    ApartmentService apartmentService;
+    ObjectMapper objectMapper;
+    ExceptionHandler exceptionHandler;
+
+    public ReserveApartmentServlet(ApartmentService apartmentService,
+                                   ObjectMapper objectMapper,
+                                   ExceptionHandler exceptionHandler){
+        this.apartmentService = apartmentService;
+        this.objectMapper = objectMapper;
+        this.exceptionHandler = exceptionHandler;
+    }
+
+    public ReserveApartmentServlet() {
+        this.apartmentService = new ApartmentService();
+        this.objectMapper = new ObjectMapper();
+        this.exceptionHandler = new ExceptionHandler();
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

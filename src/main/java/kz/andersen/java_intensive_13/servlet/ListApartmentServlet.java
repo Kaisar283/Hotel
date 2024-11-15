@@ -14,8 +14,19 @@ import java.util.List;
 
 @WebServlet("/apartment")
 public class ListApartmentServlet extends HttpServlet {
-    private final ApartmentService apartmentService = new ApartmentService();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ApartmentService apartmentService;
+    private final ObjectMapper objectMapper;
+
+    public ListApartmentServlet(ApartmentService apartmentService,
+                                ObjectMapper objectMapper) {
+        this.apartmentService = apartmentService;
+        this.objectMapper = objectMapper;
+    }
+
+    public ListApartmentServlet(){
+        this.apartmentService = new ApartmentService();
+        this.objectMapper = new ObjectMapper();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, IOException {

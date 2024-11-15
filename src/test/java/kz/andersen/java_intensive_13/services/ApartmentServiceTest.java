@@ -1,14 +1,14 @@
 package kz.andersen.java_intensive_13.services;
 
 import kz.andersen.java_intensive_13.enums.ResultCode;
+import kz.andersen.java_intensive_13.exception.AlreadyReservedException;
+import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.Client;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
@@ -25,10 +25,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ApartmentServiceTest{
-    private final ApartmentStorage apartmentStorage = Mockito.mock(ApartmentStorage.class);
-
-    @InjectMocks
-    ApartmentService apartmentService;
 
     static int page = 1;
     static int pageSize = 5;
@@ -43,178 +39,244 @@ class ApartmentServiceTest{
 
     @Test
     public void reserveApartment_returnSuccess_whenApartmentIsReserved() {
-        int apartmentId = 1;
-        Apartment apartment = new Apartment(200.0);
-        apartment.setId(apartmentId);
-        apartment.setIsReserved(false);
-        Client client = new Client("Gorge");
+        try (MockedStatic<ApartmentStorage> mockedStorage = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStorage.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
 
-        given(apartmentStorage.getApartmentById(apartmentId)).willReturn(Optional.of(apartment));
+            Apartment apartment = new Apartment(1, 200.0);
+            apartment.setIsReserved(false);
+            Client client = new Client("Gorge");
 
-        ResultCode result = apartmentService.reserveApartment(apartmentId, client);
+            when(mockApartmentStorage.getApartmentById(1)).thenReturn(Optional.of(apartment));
 
-        assertEquals(ResultCode.SUCCESS, result);
-        assertTrue(apartment.isReserved());
-        assertEquals(client, apartment.getReservedBy());
-        verify(apartmentStorage, times(2)).getApartmentById(apartmentId);
+            ApartmentService apartmentService = new ApartmentService();
+            ResultCode result = apartmentService.reserveApartment(1, client);
+
+            assertEquals(ResultCode.SUCCESS, result);
+            assertTrue(apartment.getIsReserved());
+            assertEquals(client, apartment.getReservedBy());
+            verify(mockApartmentStorage, times(2)).getApartmentById(1);
+        }
     }
     @Test
-    public void reserveApartment_returnNot_Found_whenApartmentIsNotFound() {
-        int apartmentId = 1;
-        Client client = new Client("Alice");
+    public void reserveApartment_throwResourceNotFoundException_whenApartmentIsNotFound() {
+        try(MockedStatic<ApartmentStorage> mockedStorage = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStorage.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
+            int apartmentId = 1;
+            Client client = new Client("Alice");
 
-        given(apartmentStorage.getApartmentById(apartmentId)).willReturn(Optional.empty());
+            given(mockApartmentStorage.getApartmentById(apartmentId)).willReturn(Optional.empty());
 
-        ResultCode resultCode = apartmentService.reserveApartment(apartmentId, client);
-
-        assertEquals(ResultCode.NOT_FOUND, resultCode);
-        verify(apartmentStorage).getApartmentById(apartmentId);
+            ApartmentService apartmentService = new ApartmentService();
+            ResourceNotFoundException exception = assertThrows(
+                    ResourceNotFoundException.class,
+                    () -> apartmentService.reserveApartment(apartmentId, client)
+            );
+            assertEquals("Apartment with id 1 is not found!", exception.getMessage());
+            verify(mockApartmentStorage).getApartmentById(apartmentId);
+        }
     }
 
     @Test
-    public void reserveApartment_returnReservedCode_whenApartmentIsNotAvailable() {
-        Client client = new Client("Gorge");
-        int apartmentId = 9;
-        Apartment apartment = new Apartment(1500);
-        apartment.setId(apartmentId);
-        apartment.setIsReserved(true);
-        apartment.setReservedBy(client);
+    public void reserveApartment_throwAlreadyReservedException_whenApartmentIsNotAvailable() {
+        try(MockedStatic<ApartmentStorage> mockedStorage = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStorage.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
+            Client client = new Client("Gorge");
+            Apartment apartment = new Apartment(9, 1500);
+            apartment.setIsReserved(true);
+            apartment.setReservedBy(client);
+            Client anotherClient = new Client("Alice");
 
-        given(apartmentStorage.getApartmentById(9)).willReturn(Optional.of(apartment));
-        ResultCode resultCode = apartmentService.reserveApartment(apartmentId, client);
+            given(mockApartmentStorage.getApartmentById(9)).willReturn(Optional.of(apartment));
+            ApartmentService apartmentService = new ApartmentService();
 
-        assertThat(resultCode).isEqualTo(ResultCode.RESERVED);
-        verify(apartmentStorage).getApartmentById(apartmentId);
+            AlreadyReservedException exception = assertThrows(
+                    AlreadyReservedException.class,
+                    () -> apartmentService.reserveApartment(apartment.getId(), anotherClient)
+            );
+
+            assertEquals("Apartment with id 9 already reserved!", exception.getMessage());
+            verify(mockApartmentStorage, times(1)).getApartmentById(apartment.getId());
+        }
     }
 
     @Test
     public void registerApartment_returnApartmentID_whenApartmentIsRegistered(){
-        int expectedId = 1;
-        doAnswer(invocation -> {
-            Apartment apartmentInstance = invocation.getArgument(0);
-            apartmentInstance.setId(1);
-            return null;
-        }).when(apartmentStorage).addApartment(any(Apartment.class));
-        Apartment apartment = new Apartment(1500);
-        int registerApartment = apartmentService.registerApartment(apartment);
-        assertEquals(expectedId, registerApartment);
-        verify(apartmentStorage).addApartment(any(Apartment.class));
+        try(MockedStatic<ApartmentStorage> mockedStorage = mockStatic(ApartmentStorage.class)){
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStorage.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
+            int expectedId = 1;
+            doAnswer(invocation -> {
+                Apartment apartmentInstance = invocation.getArgument(0);
+                apartmentInstance.setId(1);
+                return null;
+            }).when(mockApartmentStorage).addApartment(any(Apartment.class));
+            Apartment apartment = new Apartment(1500);
+            ApartmentService apartmentService = new ApartmentService();
+            int registerApartment = apartmentService.registerApartment(apartment);
+            assertEquals(expectedId, registerApartment);
+            verify(mockApartmentStorage).addApartment(any(Apartment.class));
+        }
     }
 
     @Test
     public void releaseApartment_returnSuccess_whenApartmentIsReleased(){
-        int apartmentId = 7;
-        Client client = new Client("Alice");
-        Apartment apartment = new Apartment(1500);
-        apartment.setId(7);
-        apartment.setIsReserved(true);
-        apartment.setReservedBy(client);
+        try(MockedStatic<ApartmentStorage> mockedStatic = mockStatic(ApartmentStorage.class)){
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
 
-        given(apartmentStorage.getApartmentById(apartmentId)).willReturn(Optional.of(apartment));
+            Client client = new Client("Alice");
+            Apartment apartment = new Apartment(7, 1500);
+            apartment.setIsReserved(true);
+            apartment.setReservedBy(client);
 
-        ResultCode resultCode = apartmentService.releaseApartment(apartmentId);
+            given(mockApartmentStorage.getApartmentById(apartment.getId())).willReturn(Optional.of(apartment));
 
-        assertThat(resultCode).isEqualTo(ResultCode.SUCCESS);
-        assertThat(apartment.getReservedBy()).isNull();
-        assertThat(apartment.isReserved()).isEqualTo(false);
-        verify(apartmentStorage, times(2)).getApartmentById(apartmentId);
+            ApartmentService apartmentService = new ApartmentService();
+            ResultCode resultCode = apartmentService.releaseApartment(apartment.getId());
+
+            assertThat(resultCode).isEqualTo(ResultCode.SUCCESS);
+
+            assertThat(apartment.getReservedBy()).isNull();
+            assertThat(apartment.getIsReserved()).isEqualTo(false);
+            verify(mockApartmentStorage, times(2)).getApartmentById(apartment.getId());
+        }
     }
 
     @Test
     public void releaseApartment_returnNot_Reserved_whenApartmentIsNotReserved(){
-        int apartmentId = 7;
-        Apartment apartment = new Apartment(2000);
-        apartment.setId(apartmentId);
+        try(MockedStatic<ApartmentStorage> mockedStatic = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
 
-        given(apartmentStorage.getApartmentById(apartmentId)).willReturn(Optional.of(apartment));
+            Apartment apartment = new Apartment(7, 2000);
 
-        ResultCode resultCode = apartmentService.releaseApartment(apartmentId);
-        assertThat(resultCode).isEqualTo(ResultCode.NOT_RESERVED);
-        verify(apartmentStorage, times(2)).getApartmentById(apartmentId);
+            given(mockApartmentStorage.getApartmentById(apartment.getId())).willReturn(Optional.of(apartment));
+
+            ApartmentService apartmentService = new ApartmentService();
+            ResultCode resultCode = apartmentService.releaseApartment(apartment.getId());
+            assertThat(resultCode).isEqualTo(ResultCode.NOT_RESERVED);
+            verify(mockApartmentStorage, times(2)).getApartmentById(apartment.getId());
+        }
     }
     @Test
-    public void releaseApartment_returnNot_Found_whenApartmentIsNotFound(){
-        int apartmentId = 17;
+    public void releaseApartment_throwResourceNotFoundException_whenApartmentIsNotFound(){
+        try(MockedStatic<ApartmentStorage> mockedStatic = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
 
-        given(apartmentStorage.getApartmentById(apartmentId)).willReturn(Optional.empty());
+            int apartmentId = 17;
 
-        ResultCode resultCode = apartmentService.releaseApartment(apartmentId);
-        assertThat(resultCode).isEqualTo(ResultCode.NOT_FOUND);
-        verify(apartmentStorage).getApartmentById(apartmentId);
+            when(mockApartmentStorage.getApartmentById(apartmentId)).thenReturn(Optional.empty());
+
+            ApartmentService apartmentService = new ApartmentService();
+
+            ResourceNotFoundException exception = assertThrows(
+                    ResourceNotFoundException.class,
+                    () -> apartmentService.releaseApartment(apartmentId)
+            );
+
+            assertEquals("Apartment with id 17 is not found!", exception.getMessage());
+            verify(mockApartmentStorage, times(1)).getApartmentById(apartmentId);
+        }
     }
 
     @Test
     public void getApartmentsSortedByPrice_willReturnSortedList(){
-        List<Apartment> mockSortedApartments = setApartmentData();
+        try(MockedStatic<ApartmentStorage> mockedStatic = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
 
-        given(apartmentStorage.sortApartmentByPrice()).willReturn(mockSortedApartments);
+            List<Apartment> mockSortedApartments = setApartmentData();
 
-        List<Apartment> apartments = apartmentService.getApartmentsSortedByPrice(page, pageSize);
-        assertThat(apartments).hasSize(pageSize);
-        assertThat(apartments.get(0).getPrice()).isEqualTo(1000);
-        assertThat(apartments.get(1).getPrice()).isEqualTo(1500);
-        assertThat(apartments.get(2).getPrice()).isEqualTo(2000);
-        assertThat(apartments.get(3).getPrice()).isEqualTo(2500);
-        assertThat(apartments.get(4).getPrice()).isEqualTo(3000);
-        verify(apartmentStorage).sortApartmentByPrice();
+            given(mockApartmentStorage.sortApartmentByPrice()).willReturn(mockSortedApartments);
+
+            ApartmentService apartmentService = new ApartmentService();
+            List<Apartment> apartments = apartmentService.getApartmentsSortedByPrice(page, pageSize);
+            assertThat(apartments).hasSize(pageSize);
+            assertThat(apartments.get(0).getPrice()).isEqualTo(1000);
+            assertThat(apartments.get(1).getPrice()).isEqualTo(1500);
+            assertThat(apartments.get(2).getPrice()).isEqualTo(2000);
+            assertThat(apartments.get(3).getPrice()).isEqualTo(2500);
+            assertThat(apartments.get(4).getPrice()).isEqualTo(3000);
+            verify(mockApartmentStorage).sortApartmentByPrice();
+        }
     }
 
     @Test
     public void getApartmentsSortedById_willReturnSortedList(){
-        List<Apartment> mockApartmentList = setApartmentData();
+        try(MockedStatic<ApartmentStorage> mockedStatic = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
+            List<Apartment> mockApartmentList = setApartmentData();
 
-        given(apartmentStorage.sortApartmentById()).willReturn(mockApartmentList);
+            given(mockApartmentStorage.sortApartmentById()).willReturn(mockApartmentList);
 
-        List<Apartment> apartments = apartmentService.getApartmentsSortedById(page, pageSize);
-        assertThat(apartments.get(0).getId()).isEqualTo(1);
-        assertThat(apartments.get(1).getId()).isEqualTo(2);
-        assertThat(apartments.get(2).getId()).isEqualTo(3);
-        assertThat(apartments.get(3).getId()).isEqualTo(4);
-        assertThat(apartments.get(4).getId()).isEqualTo(5);
-        verify(apartmentStorage).sortApartmentById();
+            ApartmentService apartmentService = new ApartmentService();
+            List<Apartment> apartments = apartmentService.getApartmentsSortedById(page, pageSize);
+            assertThat(apartments.get(0).getId()).isEqualTo(1);
+            assertThat(apartments.get(1).getId()).isEqualTo(2);
+            assertThat(apartments.get(2).getId()).isEqualTo(3);
+            assertThat(apartments.get(3).getId()).isEqualTo(4);
+            assertThat(apartments.get(4).getId()).isEqualTo(5);
+            verify(mockApartmentStorage).sortApartmentById();
+        }
     }
 
     @Test
     public void getApartmentSortedByReservationStatus_willReturnSortedList(){
-        List<Apartment> mockApartmentList = setApartmentData();
-        mockApartmentList.getLast().setIsReserved(true);
-        List<Apartment> expectedMockApartmentList = mockApartmentList.reversed();
+        try(MockedStatic<ApartmentStorage> mockedStatic = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
 
-        given(apartmentStorage.sortedApartmentByReservationStatus())
-                .willReturn(expectedMockApartmentList);
+            List<Apartment> mockApartmentList = setApartmentData();
+            mockApartmentList.getLast().setIsReserved(true);
+            List<Apartment> expectedMockApartmentList = mockApartmentList.reversed();
 
-        List<Apartment> apartments = apartmentService.getApartmentSortedByReservationStatus(page, pageSize);
+            given(mockApartmentStorage.sortedApartmentByReservationStatus())
+                    .willReturn(expectedMockApartmentList);
 
-        assertTrue(apartments.get(0).isReserved());
-        verify(apartmentStorage).sortedApartmentByReservationStatus();
+            ApartmentService apartmentService = new ApartmentService();
+            List<Apartment> apartments = apartmentService.getApartmentSortedByReservationStatus(page, pageSize);
+
+            assertTrue(apartments.get(0).getIsReserved());
+            verify(mockApartmentStorage).sortedApartmentByReservationStatus();
+        }
     }
 
     @Test
     public void getApartmentSortedByClientName_willReturnSortedList(){
-        Client alice = new Client("Alice");
-        Client bob = new Client("Bob");
-        Client john = new Client("John");
-        List<Apartment> mockApartmentList = setApartmentData();
-        mockApartmentList.get(0).setReservedBy(john);
-        mockApartmentList.get(1).setReservedBy(bob);
-        mockApartmentList.get(2).setReservedBy(alice);
+        try(MockedStatic<ApartmentStorage> mockedStatic = mockStatic(ApartmentStorage.class)) {
+            ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
+            mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
+            Client alice = new Client("Alice");
+            Client bob = new Client("Bob");
+            Client john = new Client("John");
+            List<Apartment> mockApartmentList = setApartmentData();
+            mockApartmentList.get(0).setReservedBy(john);
+            mockApartmentList.get(1).setReservedBy(bob);
+            mockApartmentList.get(2).setReservedBy(alice);
 
-        given(apartmentStorage.sortApartmentByClientName())
-                .willReturn(mockApartmentList);
+            given(mockApartmentStorage.sortApartmentByClientName())
+                    .willReturn(mockApartmentList);
 
-        List<Apartment> apartments = apartmentService.getApartmentSortedByClientName(page, pageSize);
-        assertThat(apartments.get(0).getReservedBy().getName()).isEqualTo(john.getName());
-        assertThat(apartments.get(1).getReservedBy().getName()).isEqualTo(bob.getName());
-        assertThat(apartments.get(2).getReservedBy().getName()).isEqualTo(alice.getName());
+            ApartmentService apartmentService = new ApartmentService();
+            List<Apartment> apartments = apartmentService.getApartmentSortedByClientName(page, pageSize);
+            assertThat(apartments.get(0).getReservedBy().getName()).isEqualTo(john.getName());
+            assertThat(apartments.get(1).getReservedBy().getName()).isEqualTo(bob.getName());
+            assertThat(apartments.get(2).getReservedBy().getName()).isEqualTo(alice.getName());
 
-        verify(apartmentStorage).sortApartmentByClientName();
+            verify(mockApartmentStorage).sortApartmentByClientName();
+        }
     }
 
     // Here method pagingApartments is not interacting with ApartmentStorage class
     @Test
     public void pagingApartments_willReturnEmptyLis(){
         List<Apartment> apartments = new ArrayList<>();
-
+        ApartmentService apartmentService = new ApartmentService();
         List<Apartment> pagedList = apartmentService.pagingApartments(0, 0, apartments);
         assertEquals(apartments.isEmpty(), pagedList.isEmpty());
     }
@@ -223,7 +285,7 @@ class ApartmentServiceTest{
     @Test
     public void pagingApartments_willReturnPagedList(){
         List<Apartment> apartments = setApartmentData();
-
+        ApartmentService apartmentService = new ApartmentService();
         List<Apartment> pagedList = apartmentService.pagingApartments(page, pageSize, apartments);
         assertThat(pagedList).isEqualTo(apartments);
     }
@@ -241,5 +303,4 @@ class ApartmentServiceTest{
                 apartment4,
                 apartment5);
     }
-
 }

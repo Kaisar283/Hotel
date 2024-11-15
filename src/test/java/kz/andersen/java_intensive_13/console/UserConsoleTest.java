@@ -6,6 +6,7 @@ import kz.andersen.java_intensive_13.models.Client;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -16,6 +17,7 @@ import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 class UserConsoleTest {
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();

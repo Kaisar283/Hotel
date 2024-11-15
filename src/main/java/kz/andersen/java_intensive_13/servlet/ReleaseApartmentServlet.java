@@ -20,9 +20,18 @@ import java.io.IOException;
 @WebServlet("/apartment/release")
 public class ReleaseApartmentServlet extends HttpServlet {
 
-    private final ApartmentService apartmentService = new ApartmentService();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ExceptionHandler exceptionHandler = new ExceptionHandler();
+    private  ApartmentService apartmentService = new ApartmentService();
+    private  ObjectMapper objectMapper = new ObjectMapper();
+    private  ExceptionHandler exceptionHandler = new ExceptionHandler();
+
+    public ReleaseApartmentServlet(ApartmentService apartmentService,
+                                   ObjectMapper objectMapper,
+                                   ExceptionHandler exceptionHandler) {
+        this.apartmentService = apartmentService;
+        this.objectMapper = objectMapper;
+        this.exceptionHandler = exceptionHandler;
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");

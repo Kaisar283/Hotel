@@ -85,7 +85,7 @@ public class ApartmentStorage {
      * @return a new ArrayList sorted by Reservation status, in DESC order.
      */
     public List<Apartment> sortedApartmentByReservationStatus(){
-        apartments.sort(Comparator.comparing(Apartment::isReserved));
+        apartments.sort(Comparator.comparing(Apartment::getIsReserved));
         return apartments.reversed();
     }
 
