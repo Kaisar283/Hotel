@@ -1,10 +1,24 @@
 package kz.andersen.java_intensive_13.repository;
 
 import kz.andersen.java_intensive_13.models.Apartment;
+import kz.andersen.java_intensive_13.services.ApartmentService;
 
 import java.util.*;
 
 public class ApartmentStorage {
+
+    private static volatile ApartmentStorage instance;
+
+    public static ApartmentStorage getInstance(){
+        if(instance == null){
+            synchronized (ApartmentStorage.class){
+                if (instance == null){
+                    instance =  new ApartmentStorage();
+                }
+            }
+        }
+        return instance;
+    }
 
     private final List<Apartment> apartments = new ArrayList<>();
 
@@ -71,7 +85,7 @@ public class ApartmentStorage {
      * @return a new ArrayList sorted by Reservation status, in DESC order.
      */
     public List<Apartment> sortedApartmentByReservationStatus(){
-        apartments.sort(Comparator.comparing(Apartment::isReserved));
+        apartments.sort(Comparator.comparing(Apartment::getIsReserved));
         return apartments.reversed();
     }
 

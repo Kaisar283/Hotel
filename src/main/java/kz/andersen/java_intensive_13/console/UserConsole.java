@@ -12,6 +12,7 @@ import kz.andersen.java_intensive_13.services.ApartmentService;
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Deprecated
 public class UserConsole {
     private static final int MIN_COMMAND_PARTS_LENGTH = 2;
     private static final int PAGE_INDEX = 2;
@@ -69,9 +70,9 @@ public class UserConsole {
         try {
 
             double price = Double.parseDouble(commandParts[1]);
-            int id = apartmentService.registerApartment(price);
+            Apartment apartment = new Apartment(price);
+            int id = apartmentService.registerApartment(apartment);
             System.out.println("Apartment registered with price: " + price + ", apartment ID: " + id);
-            Apartment apartment = apartmentService.getApartment(id).orElse(null);
             collectorManager.saveState(StateCollector.collectState(apartment,
                     ApplicationOperations.REGISTER,
                     Arrays.toString(commandParts),

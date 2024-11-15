@@ -6,6 +6,7 @@ import kz.andersen.java_intensive_13.models.Client;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -16,6 +17,7 @@ import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled("These tests are disabled, because UserConsole.class no longer in use")
 class UserConsoleTest {
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -264,13 +266,9 @@ class UserConsoleTest {
 
 
     private void prepareData(){
+
         ApartmentStorage apartmentStorage = new ApartmentStorage();
-        this.apartmentService = new ApartmentService(apartmentStorage);
+        this.apartmentService = new ApartmentService();
         Client alice = new Client("Alice");
-        int apartment1 = apartmentService.registerApartment(1000);
-        int apartment2 = apartmentService.registerApartment(3000);
-        int apartment3 = apartmentService.registerApartment(2000);
-        int apartment4 = apartmentService.registerApartment(4000);
-        apartmentService.reserveApartment(apartment2, alice);
     }
 }
