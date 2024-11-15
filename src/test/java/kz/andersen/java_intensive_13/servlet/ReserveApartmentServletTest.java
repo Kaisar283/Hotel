@@ -61,7 +61,7 @@ class ReserveApartmentServletTest {
     }
 
     @Test
-    void testReserveApartmentSuccess() throws Exception {
+    void reserveApartmentSuccess() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
         Client client = new Client();
@@ -81,7 +81,7 @@ class ReserveApartmentServletTest {
     }
 
     @Test
-    void testReserveApartmentResourceNotFound() throws Exception {
+    void reserveApartmentResourceNotFound() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
         Client client = new Client();
@@ -100,7 +100,7 @@ class ReserveApartmentServletTest {
     }
 
     @Test
-    void testReserveApartmentAlreadyReserved() throws Exception {
+    void reserveApartmentAlreadyReserved() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
         Client client = new Client();
