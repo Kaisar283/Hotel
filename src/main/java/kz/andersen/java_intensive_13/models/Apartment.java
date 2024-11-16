@@ -1,8 +1,6 @@
 package kz.andersen.java_intensive_13.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Objects;
 
@@ -12,7 +10,7 @@ public class Apartment {
     private double price;
     @JsonProperty("isReserved")
     private boolean isReserved;
-    private Client reservedBy;
+    private User reservedBy;
 
     public Apartment() {
         this.id = counter++;
@@ -62,11 +60,11 @@ public class Apartment {
         isReserved = reserved;
     }
 
-    public Client getReservedBy() {
+    public User getReservedBy() {
         return reservedBy;
     }
 
-    public void setReservedBy(Client reservedBy) {
+    public void setReservedBy(User reservedBy) {
         this.reservedBy = reservedBy;
     }
 

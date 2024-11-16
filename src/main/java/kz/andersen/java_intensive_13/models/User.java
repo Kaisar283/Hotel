@@ -1,12 +1,12 @@
 package kz.andersen.java_intensive_13.models;
 
-public class Client {
+public class User {
     private String name;
 
-    public Client() {
+    public User() {
     }
 
-    public Client(String name) {
+    public User(String name) {
         this.name = name;
     }
 
@@ -20,7 +20,7 @@ public class Client {
 
     @Override
     public String toString() {
-        return "Client{" +
+        return "User{" +
                 "name='" + name + '\'' +
                 '}';
     }

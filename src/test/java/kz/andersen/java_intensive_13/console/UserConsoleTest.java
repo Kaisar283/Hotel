@@ -1,14 +1,12 @@
 package kz.andersen.java_intensive_13.console;
 
-import kz.andersen.java_intensive_13.config.PropertyLoader;
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.models.User;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -269,6 +267,6 @@ class UserConsoleTest {
 
         ApartmentStorage apartmentStorage = new ApartmentStorage();
         this.apartmentService = new ApartmentService();
-        Client alice = new Client("Alice");
+        User alice = new User("Alice");
     }
 }

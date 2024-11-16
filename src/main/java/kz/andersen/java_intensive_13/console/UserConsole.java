@@ -6,10 +6,9 @@ import kz.andersen.java_intensive_13.config.PropertyLoader;
 import kz.andersen.java_intensive_13.enums.ApplicationOperations;
 import kz.andersen.java_intensive_13.enums.ResultCode;
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.models.User;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Deprecated
@@ -99,12 +98,12 @@ public class UserConsole {
         try {
             int apartmentId = Integer.parseInt(commandParts[1]);
             String clientName = commandParts[2];
-            Client client = new Client(clientName);
-            ResultCode resultCode = apartmentService.reserveApartment(apartmentId, client);
+            User user = new User(clientName);
+            ResultCode resultCode = apartmentService.reserveApartment(apartmentId, user);
             switch (resultCode) {
                 case NOT_FOUND -> System.out.println("Apartment with id " + apartmentId + " is not found");
                 case RESERVED -> System.out.println("Apartment already reserved.");
-                case SUCCESS -> System.out.println("Apartment successfully reserved by " + client.getName());
+                case SUCCESS -> System.out.println("Apartment successfully reserved by " + user.getName());
             }
             Apartment apartment = apartmentService.getApartment(apartmentId).orElse(null);
             collectorManager.saveState(StateCollector.collectState(apartment,
@@ -256,7 +255,7 @@ public class UserConsole {
         System.out.println("""
                 Available commands:
                 register <price>                        - Register a new apartment with the given price.
-                reserve <id> <name>                     - Reserve an apartment for a client.
+                reserve <id> <name>                     - Reserve an apartment for a user.
                 release <id>                            - Release a reservation for an apartment.
                 list [<page> <pageSize>]                - List apartments with optional pagination.
                 sorted by <field> [<page> <pageSize>]   - List apartments sorted by a specified fields.

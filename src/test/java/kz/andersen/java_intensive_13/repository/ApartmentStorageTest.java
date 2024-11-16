@@ -1,7 +1,7 @@
 package kz.andersen.java_intensive_13.repository;
 
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.models.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -97,9 +97,9 @@ class ApartmentStorageTest {
 
     @Test
     public void sortApartmentByClientName_returnSortedList(){
-        Client alice = new Client("Alice");
-        Client john = new Client("John");
-        Client zara = new Client("Zara");
+        User alice = new User("Alice");
+        User john = new User("John");
+        User zara = new User("Zara");
         Apartment apartmentById = apartmentStorage.getApartmentById(5).get();
         apartmentById.setReservedBy(alice);
         Apartment johnsApartment = apartmentStorage.getApartmentById(4).get();

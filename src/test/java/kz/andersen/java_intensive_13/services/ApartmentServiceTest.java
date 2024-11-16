@@ -4,7 +4,7 @@ import kz.andersen.java_intensive_13.enums.ResultCode;
 import kz.andersen.java_intensive_13.exception.AlreadyReservedException;
 import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.models.User;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,16 +45,16 @@ class ApartmentServiceTest{
 
             Apartment apartment = new Apartment(1, 200.0);
             apartment.setIsReserved(false);
-            Client client = new Client("Gorge");
+            User user = new User("Gorge");
 
             when(mockApartmentStorage.getApartmentById(1)).thenReturn(Optional.of(apartment));
 
             ApartmentService apartmentService = new ApartmentService();
-            ResultCode result = apartmentService.reserveApartment(1, client);
+            ResultCode result = apartmentService.reserveApartment(1, user);
 
             assertEquals(ResultCode.SUCCESS, result);
             assertTrue(apartment.getIsReserved());
-            assertEquals(client, apartment.getReservedBy());
+            assertEquals(user, apartment.getReservedBy());
             verify(mockApartmentStorage, times(2)).getApartmentById(1);
         }
     }
@@ -64,14 +64,14 @@ class ApartmentServiceTest{
             ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
             mockedStorage.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
             int apartmentId = 1;
-            Client client = new Client("Alice");
+            User user = new User("Alice");
 
             given(mockApartmentStorage.getApartmentById(apartmentId)).willReturn(Optional.empty());
 
             ApartmentService apartmentService = new ApartmentService();
             ResourceNotFoundException exception = assertThrows(
                     ResourceNotFoundException.class,
-                    () -> apartmentService.reserveApartment(apartmentId, client)
+                    () -> apartmentService.reserveApartment(apartmentId, user)
             );
             assertEquals("Apartment with id 1 is not found!", exception.getMessage());
             verify(mockApartmentStorage).getApartmentById(apartmentId);
@@ -83,18 +83,18 @@ class ApartmentServiceTest{
         try(MockedStatic<ApartmentStorage> mockedStorage = mockStatic(ApartmentStorage.class)) {
             ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
             mockedStorage.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
-            Client client = new Client("Gorge");
+            User user = new User("Gorge");
             Apartment apartment = new Apartment(9, 1500);
             apartment.setIsReserved(true);
-            apartment.setReservedBy(client);
-            Client anotherClient = new Client("Alice");
+            apartment.setReservedBy(user);
+            User anotherUser = new User("Alice");
 
             given(mockApartmentStorage.getApartmentById(9)).willReturn(Optional.of(apartment));
             ApartmentService apartmentService = new ApartmentService();
 
             AlreadyReservedException exception = assertThrows(
                     AlreadyReservedException.class,
-                    () -> apartmentService.reserveApartment(apartment.getId(), anotherClient)
+                    () -> apartmentService.reserveApartment(apartment.getId(), anotherUser)
             );
 
             assertEquals("Apartment with id 9 already reserved!", exception.getMessage());
@@ -127,10 +127,10 @@ class ApartmentServiceTest{
             ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
             mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
 
-            Client client = new Client("Alice");
+            User user = new User("Alice");
             Apartment apartment = new Apartment(7, 1500);
             apartment.setIsReserved(true);
-            apartment.setReservedBy(client);
+            apartment.setReservedBy(user);
 
             given(mockApartmentStorage.getApartmentById(apartment.getId())).willReturn(Optional.of(apartment));
 
@@ -251,9 +251,9 @@ class ApartmentServiceTest{
         try(MockedStatic<ApartmentStorage> mockedStatic = mockStatic(ApartmentStorage.class)) {
             ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
             mockedStatic.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
-            Client alice = new Client("Alice");
-            Client bob = new Client("Bob");
-            Client john = new Client("John");
+            User alice = new User("Alice");
+            User bob = new User("Bob");
+            User john = new User("John");
             List<Apartment> mockApartmentList = setApartmentData();
             mockApartmentList.get(0).setReservedBy(john);
             mockApartmentList.get(1).setReservedBy(bob);

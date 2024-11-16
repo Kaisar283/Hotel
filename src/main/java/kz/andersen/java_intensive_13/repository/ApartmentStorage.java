@@ -72,7 +72,7 @@ public class ApartmentStorage {
     }
 
     /**
-     * @return a new ArrayList sorted by Client name, in DESC order.
+     * @return a new ArrayList sorted by User name, in DESC order.
      */
     public List<Apartment> sortApartmentByClientName() {
         apartments.sort(Comparator.comparing(

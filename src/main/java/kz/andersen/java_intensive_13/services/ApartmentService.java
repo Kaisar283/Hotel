@@ -4,7 +4,7 @@ import kz.andersen.java_intensive_13.enums.ResultCode;
 import kz.andersen.java_intensive_13.exception.AlreadyReservedException;
 import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.models.User;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +31,7 @@ public class ApartmentService {
         return apartment.getId();
     }
 
-    public ResultCode reserveApartment(int apartmentId, Client client) throws ResourceNotFoundException, AlreadyReservedException{
+    public ResultCode reserveApartment(int apartmentId, User user) throws ResourceNotFoundException, AlreadyReservedException{
         Optional<Apartment> apartmentOptional = apartmentStorage.getApartmentById(apartmentId);
         if(apartmentOptional.isEmpty()){
             throw new ResourceNotFoundException("Apartment with id " + apartmentId + " is not found!");
@@ -40,7 +40,7 @@ public class ApartmentService {
         } else {
             Apartment apartment = apartmentStorage.getApartmentById(apartmentId).get();
             apartment.setIsReserved(true);
-            apartment.setReservedBy(client);
+            apartment.setReservedBy(user);
             return ResultCode.SUCCESS;
         }
     }
