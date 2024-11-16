@@ -32,6 +32,6 @@ bin/
 ### Tomcat ###
 .smarttomcat
 
-### Project output ###
+### Project files ###
 app-files
 target

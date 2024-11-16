@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-test-apartment
+      author: Kaisar Toktarkozha
+      changes:
+        - insert:
+            tableName: apartment
+            columns:
+              - column:
+                  name: id
+                  value: 1
+              - column:
+                  name: price
+                  value: 2000
+              - column:
+                  name: isReserved
+                  value: false
+              - column:
+                  name: reservedBy
+                  value: null
+              - column:
+                  name: created_at
+                  value: 2024-07-28T12:00:00Z
+              - column:
+                  name: updated_at
+                  value: 2024-07-28T12:00:00Z
+        - insert:
+            tableName: apartment
+            columns:
+              - column:
+                  name: id
+                  value: 2
+              - column:
+                  name: price
+                  value: 3000
+              - column:
+                  name: isReserved
+                  value: true
+              - column:
+                  name: reservedBy
+                  value: 1
+              - column:
+                  name: created_at
+                  value: 2024-07-28T12:00:00Z
+              - column:
+                  name: updated_at
+                  value: 2024-07-28T12:00:00Z
+        - insert:
+            tableName: apartment
+            columns:
+              - column:
+                  name: id
+                  value: 3
+              - column:
+                  name: price
+                  value: 5000
+              - column:
+                  name: isReserved
+                  value: false
+              - column:
+                  name: reservedBy
+                  value: null
+              - column:
+                  name: created_at
+                  value: 2024-07-28T12:00:00Z
+              - column:
+                  name: updated_at
+                  value: 2024-07-28T12:00:00Z

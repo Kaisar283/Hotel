@@ -7,7 +7,8 @@ import java.time.ZonedDateTime;
 public class User {
 
     private Long id;
-    private String name;
+    private String fistName;
+    private String lastName;
     UserRole userRole;
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
@@ -15,13 +16,13 @@ public class User {
     public User() {
     }
 
-    public User(String name) {
-        this.name = name;
+    public User(String fistName) {
+        this.fistName = fistName;
     }
 
-    public User(long id, String name) {
+    public User(long id, String fistName) {
         this.id = id;
-        this.name = name;
+        this.fistName = fistName;
         this.userRole = UserRole.USER;
         this.createdAt = ZonedDateTime.now();
         this.updatedAt = ZonedDateTime.now();
@@ -36,11 +37,11 @@ public class User {
     }
 
     public String getName() {
-        return name;
+        return fistName;
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.fistName = name;
     }
 
     public UserRole getUserRole() {
@@ -70,7 +71,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "name='" + name + '\'' +
+                "fistName='" + fistName + '\'' +
                 '}';
     }
 }
