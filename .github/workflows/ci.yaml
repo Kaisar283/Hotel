@@ -38,14 +38,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Run the Maven verify phase
-        run: mvn --batch-mode --update-snapshots verify
+      - name: Build the project (without tests)
+        run: mvn clean install -DskipTests
 
       - name: Apply database migrations
         run: mvn liquibase:update
-
-      - name: Build the project (without tests)
-        run: mvn clean install -DskipTests
 
       - name: Run tests
         run: mvn test
