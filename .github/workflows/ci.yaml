@@ -41,10 +41,14 @@ jobs:
       - name: Run the Maven verify phase
         run: mvn --batch-mode --update-snapshots verify
 
-      - name: Build with Maven
-        run: |
-          mvn -B package --file pom.xml
-          mvn liquibase:update
+      - name: Apply database migrations
+        run: mvn liquibase:update
+
+      - name: Build the project (without tests)
+        run: mvn clean install -DskipTests
+
+      - name: Run tests
+        run: mvn test
 
       - name: Persist workflow data as artifact
         run: mkdir staging && cp target/*.jar staging
