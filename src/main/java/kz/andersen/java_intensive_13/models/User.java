@@ -36,12 +36,20 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
+    public String getFistName() {
         return fistName;
     }
 
-    public void setName(String name) {
+    public void setFistName(String name) {
         this.fistName = name;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public UserRole getUserRole() {

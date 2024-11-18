@@ -264,9 +264,9 @@ class ApartmentServiceTest{
 
             ApartmentService apartmentService = new ApartmentService();
             List<Apartment> apartments = apartmentService.getApartmentSortedByClientName(page, pageSize);
-            assertThat(apartments.get(0).getReservedBy().getName()).isEqualTo(john.getName());
-            assertThat(apartments.get(1).getReservedBy().getName()).isEqualTo(bob.getName());
-            assertThat(apartments.get(2).getReservedBy().getName()).isEqualTo(alice.getName());
+            assertThat(apartments.get(0).getReservedBy().getFistName()).isEqualTo(john.getFistName());
+            assertThat(apartments.get(1).getReservedBy().getFistName()).isEqualTo(bob.getFistName());
+            assertThat(apartments.get(2).getReservedBy().getFistName()).isEqualTo(alice.getFistName());
 
             verify(mockApartmentStorage).sortApartmentByClientName();
         }

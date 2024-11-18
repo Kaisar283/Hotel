@@ -103,7 +103,7 @@ public class UserConsole {
             switch (resultCode) {
                 case NOT_FOUND -> System.out.println("Apartment with id " + apartmentId + " is not found");
                 case RESERVED -> System.out.println("Apartment already reserved.");
-                case SUCCESS -> System.out.println("Apartment successfully reserved by " + user.getName());
+                case SUCCESS -> System.out.println("Apartment successfully reserved by " + user.getFistName());
             }
             Apartment apartment = apartmentService.getApartment(apartmentId).orElse(null);
             collectorManager.saveState(StateCollector.collectState(apartment,
