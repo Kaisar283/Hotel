@@ -1,11 +1,11 @@
 databaseChangeLog:
   - include:
-      file: src/main/resources/db.changelog/v1-changelog/create-table-user.yaml
+      file: src/main/resources/db_config.changelog/v1-changelog/create-table-user.yaml
   - include:
-      file: src/main/resources/db.changelog/v1-changelog/create-table-apartment.yaml
+      file: src/main/resources/db_config.changelog/v1-changelog/create-table-apartment.yaml
   - include:
-      file: src/main/resources/db.changelog/v1-changelog/add-foreignKey-constraint.yaml
+      file: src/main/resources/db_config.changelog/v1-changelog/add-foreignKey-constraint.yaml
   - include:
-      file: src/main/resources/db.changelog/v1-changelog/test-data/insert-test-user.yaml
+      file: src/main/resources/db_config.changelog/v1-changelog/test-data/insert-test-user.yaml
   - include:
-      file: src/main/resources/db.changelog/v1-changelog/test-data/insert-test-apartment.yaml
+      file: src/main/resources/db_config.changelog/v1-changelog/test-data/insert-test-apartment.yaml

@@ -265,7 +265,7 @@ class UserConsoleTest {
 
     private void prepareData(){
 
-        ApartmentStorage apartmentStorage = new ApartmentStorage();
+        ApartmentStorage apartmentStorage = ApartmentStorage.getInstance();
         this.apartmentService = new ApartmentService();
         User alice = new User("Alice");
     }

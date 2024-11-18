@@ -65,7 +65,7 @@ class ReserveApartmentServletTest {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
         User user = new User();
-        user.setName("John");
+        user.setFistName("John");
         apartment.setReservedBy(user);
         apartment.setIsReserved(true);
 
@@ -85,7 +85,7 @@ class ReserveApartmentServletTest {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
         User user = new User();
-        user.setName("John");
+        user.setFistName("John");
         apartment.setReservedBy(user);
         apartment.setIsReserved(true);
 
@@ -104,7 +104,7 @@ class ReserveApartmentServletTest {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
         User user = new User();
-        user.setName("John");
+        user.setFistName("John");
         apartment.setReservedBy(user);
         apartment.setIsReserved(true);
 

@@ -18,7 +18,7 @@ class ApartmentStorageTest {
 
     @BeforeEach
     public  void setApartmentStorage() throws Exception {
-        apartmentStorage = new ApartmentStorage();
+        apartmentStorage = ApartmentStorage.getInstance();
         Field counterField = Apartment.class.getDeclaredField("counter");
         counterField.setAccessible(true);
         counterField.set(null, 1);
@@ -109,9 +109,9 @@ class ApartmentStorageTest {
 
         List<Apartment> sortedApartment = apartmentStorage.sortApartmentByClientName();
 
-        assertEquals("Zara", sortedApartment.get(0).getReservedBy().getName());
-        assertEquals("John", sortedApartment.get(1).getReservedBy().getName());
-        assertEquals("Alice", sortedApartment.get(2).getReservedBy().getName());
+        assertEquals("Zara", sortedApartment.get(0).getReservedBy().getFistName());
+        assertEquals("John", sortedApartment.get(1).getReservedBy().getFistName());
+        assertEquals("Alice", sortedApartment.get(2).getReservedBy().getFistName());
         assertNull(null, String.valueOf(sortedApartment.get(3).getReservedBy()));
     }
 
