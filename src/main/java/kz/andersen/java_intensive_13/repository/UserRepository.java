@@ -26,13 +26,7 @@ public class UserRepository {
         ){
             User user = null;
             if (results.next()) {
-                user = new User();
-                user.setId(results.getLong(1));
-                user.setFistName(results.getString(2));
-                user.setLastName(results.getString(3));
-                user.setUserRole(UserRole.valueOf(results.getString(4)));
-                user.setCreatedAt(results.getTimestamp(5).toInstant().atZone(ZoneId.systemDefault()));
-                user.setUpdatedAt(results.getTimestamp(6).toInstant().atZone(ZoneId.systemDefault()));
+                user = mapResultSetToUser(results);
             }
             return user == null ? Optional.empty() : Optional.of(user);
         } catch (SQLException e) {
@@ -75,20 +69,23 @@ public class UserRepository {
             PreparedStatement pst = connection.prepareStatement(SQLQuery);
             ResultSet results = pst.executeQuery();
         ){
-            User user = null;
             while (results.next()) {
-                user = new User();
-                user.setId(results.getLong(1));
-                user.setFistName(results.getString(2));
-                user.setLastName(results.getString(3));
-                user.setUserRole(UserRole.valueOf(results.getString(4)));
-                user.setCreatedAt(results.getTimestamp(5).toInstant().atZone(ZoneId.systemDefault()));
-                user.setUpdatedAt(results.getTimestamp(6).toInstant().atZone(ZoneId.systemDefault()));
-                userList.add(user);
+                userList.add(mapResultSetToUser(results));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return userList;
+    }
+
+    private User mapResultSetToUser(ResultSet results) throws SQLException {
+        User user = new User();
+        user.setId(results.getLong(1));
+        user.setFistName(results.getString(2));
+        user.setLastName(results.getString(3));
+        user.setUserRole(UserRole.valueOf(results.getString(4)));
+        user.setCreatedAt(results.getTimestamp(5).toInstant().atZone(ZoneId.systemDefault()));
+        user.setUpdatedAt(results.getTimestamp(6).toInstant().atZone(ZoneId.systemDefault()));
+        return user;
     }
 }

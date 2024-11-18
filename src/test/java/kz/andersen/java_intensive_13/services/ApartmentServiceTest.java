@@ -6,6 +6,7 @@ import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.User;
 import kz.andersen.java_intensive_13.repository.ApartmentStorage;
+import kz.andersen.java_intensive_13.repository.UserRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -45,7 +46,7 @@ class ApartmentServiceTest{
 
             Apartment apartment = new Apartment(1, 200.0);
             apartment.setIsReserved(false);
-            User user = new User("Gorge");
+            User user = new User(1, "Gorge");
 
             when(mockApartmentStorage.getApartmentById(1)).thenReturn(Optional.of(apartment));
 
@@ -64,7 +65,7 @@ class ApartmentServiceTest{
             ApartmentStorage mockApartmentStorage = mock(ApartmentStorage.class);
             mockedStorage.when(ApartmentStorage::getInstance).thenReturn(mockApartmentStorage);
             int apartmentId = 1;
-            User user = new User("Alice");
+            User user = new User(1, "Alice");
 
             given(mockApartmentStorage.getApartmentById(apartmentId)).willReturn(Optional.empty());
 
@@ -87,7 +88,7 @@ class ApartmentServiceTest{
             Apartment apartment = new Apartment(9, 1500);
             apartment.setIsReserved(true);
             apartment.setReservedBy(user);
-            User anotherUser = new User("Alice");
+            User anotherUser = new User(1, "Alice");
 
             given(mockApartmentStorage.getApartmentById(9)).willReturn(Optional.of(apartment));
             ApartmentService apartmentService = new ApartmentService();
@@ -141,7 +142,7 @@ class ApartmentServiceTest{
 
             assertThat(apartment.getReservedBy()).isNull();
             assertThat(apartment.getIsReserved()).isEqualTo(false);
-            verify(mockApartmentStorage, times(2)).getApartmentById(apartment.getId());
+            verify(mockApartmentStorage, times(1)).getApartmentById(apartment.getId());
         }
     }
 
@@ -158,7 +159,7 @@ class ApartmentServiceTest{
             ApartmentService apartmentService = new ApartmentService();
             ResultCode resultCode = apartmentService.releaseApartment(apartment.getId());
             assertThat(resultCode).isEqualTo(ResultCode.NOT_RESERVED);
-            verify(mockApartmentStorage, times(2)).getApartmentById(apartment.getId());
+            verify(mockApartmentStorage, times(1)).getApartmentById(apartment.getId());
         }
     }
     @Test

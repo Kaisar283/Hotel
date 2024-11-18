@@ -4,7 +4,9 @@ import kz.andersen.java_intensive_13.db_config.DataSource;
 import kz.andersen.java_intensive_13.enums.UserRole;
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.User;
+import kz.andersen.java_intensive_13.services.ApartmentService;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -15,6 +17,9 @@ import static java.sql.Types.BIGINT;
 public class ApartmentStorage {
 
     private static volatile ApartmentStorage instance;
+    private DataSource dataSource;
+
+    private ApartmentStorage(){}
 
     public static ApartmentStorage getInstance(){
         if(instance == null){
