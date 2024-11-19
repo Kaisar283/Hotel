@@ -2,7 +2,6 @@ package kz.andersen.java_intensive_13.repository;
 
 import kz.andersen.java_intensive_13.db_config.DataSource;
 import kz.andersen.java_intensive_13.enums.UserRole;
-import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.User;
 
 import java.sql.*;
@@ -12,18 +11,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static java.sql.Types.BIGINT;
-
 public class UserRepository {
 
-    public Optional<User> findUserById(long userId){
-        String SQLQuery = String.format("""
-                SELECT * FROM public."user" WHERE "user".id = '%d';
-                """, userId);
-        try(Connection connection = DataSource.getConnection();
-            PreparedStatement pst = connection.prepareStatement(SQLQuery);
-            ResultSet results = pst.executeQuery();
-        ){
+    private final String SELECT_BY_ID_QUERY = "SELECT * FROM public.\"user\" WHERE \"user\".id = '%d'";
+
+    private final String INSET_USER_QUERY = """
+            INSERT INTO public."user"(
+            	id, first_name, last_name, user_role, created_at, updated_at)
+            	VALUES (?, ?, ?, ?, ?, ?);
+            """;
+
+    private final String SELECT_ALL_QUERY = "SELECT * FROM public.\"user\";";
+
+    public Optional<User> findUserById(long userId) {
+        String SQLQuery = String.format(SELECT_BY_ID_QUERY, userId);
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement pst = connection.prepareStatement(SQLQuery);
+             ResultSet results = pst.executeQuery()
+        ) {
             User user = null;
             if (results.next()) {
                 user = mapResultSetToUser(results);
@@ -34,15 +39,10 @@ public class UserRepository {
         }
     }
 
-    public int saveUser(User user){
-        String SQL_QUERY = """
-                INSERT INTO public."user"(
-                	id, first_name, last_name, user_role, created_at, updated_at)
-                	VALUES (?, ?, ?, ?, ?, ?);
-                """;
-        try(Connection connection = DataSource.getConnection();
+    public int saveUser(User user) {
+        try (Connection connection = DataSource.getConnection()
         ) {
-            PreparedStatement pst = connection.prepareStatement(SQL_QUERY);
+            PreparedStatement pst = connection.prepareStatement(INSET_USER_QUERY);
             pst.setLong(1, user.getId());
             pst.setString(2, user.getFistName());
             pst.setString(3, user.getLastName());
@@ -57,13 +57,12 @@ public class UserRepository {
         }
     }
 
-    public List<User> findAllUsers(){
+    public List<User> findAllUsers() {
         List<User> userList = new ArrayList<>();
-        String SQLQuery = "SELECT * FROM public.\"user\";";
-        try(Connection connection = DataSource.getConnection();
-            PreparedStatement pst = connection.prepareStatement(SQLQuery);
-            ResultSet results = pst.executeQuery();
-        ){
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement pst = connection.prepareStatement(SELECT_ALL_QUERY);
+             ResultSet results = pst.executeQuery()
+        ) {
             while (results.next()) {
                 userList.add(mapResultSetToUser(results));
             }

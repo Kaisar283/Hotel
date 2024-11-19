@@ -19,25 +19,68 @@ public class ApartmentStorage {
     private static volatile ApartmentStorage instance;
     private DataSource dataSource;
 
-    private final String INSET_INTO_APARTMENT_QUERY = """
-                INSERT INTO public.apartment(
-                	id, price, "isReserved", "reservedBy", created_at, updated_at)
-                	VALUES (?, ?, ?, ?, ?, ?);
-                """;
+    private final String INSET_APARTMENT_QUERY = """
+            INSERT INTO public.apartment(
+            id, price, "isReserved", "reservedBy", created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?);
+            """;
+
 
     private final String UPDATE_APARTMENT_QUERY = """
-                UPDATE public.apartment
-                	SET id=?, price=?, "isReserved"=?, "reservedBy"=?, created_at=?, updated_at=?
-                	WHERE id=%d;
-                """;
+            UPDATE public.apartment
+            SET id=?, price=?, "isReserved"=?, "reservedBy"=?, created_at=?, updated_at=?
+            WHERE id=%d;
+            """;
 
-    private ApartmentStorage(){}
+    private final String SELECT_ALL_APARTMENT = """
+            SELECT * FROM apartment LEFT JOIN public.user
+            ON apartment.\"reservedBy\" = public.user.id;
+            """;
 
-    public static ApartmentStorage getInstance(){
-        if(instance == null){
-            synchronized (ApartmentStorage.class){
-                if (instance == null){
-                    instance =  new ApartmentStorage();
+    private final String SELECT_APARTMENT_BY_ID = """
+            SELECT * FROM apartment LEFT JOIN public.user
+            ON apartment.\"reservedBy\" = public.user.id
+            WHERE apartment.id = '%d';
+            """;
+
+    private final String SORT_BY_ID = """
+            SELECT * FROM apartment LEFT JOIN public.user
+            ON apartment."reservedBy" = public.user.id
+            ORDER BY apartment.id ASC;
+            """;
+
+    private final String SORT_BY_PRICE = """
+            SELECT * FROM apartment LEFT JOIN public.user
+            ON apartment."reservedBy" = public.user.id
+            ORDER BY apartment.price DESC;
+            """;
+
+    private final String SORT_BY_USERNAME = """
+            SELECT * FROM apartment LEFT JOIN public.user
+            ON apartment."reservedBy" = public.user.id
+            ORDER BY public.user.first_name ASC;
+            """;
+
+    private final String SORT_BY_RESERVATION_STATUS = """
+            SELECT * FROM apartment LEFT JOIN public.user
+            ON apartment."reservedBy" = public.user.id
+            ORDER BY apartment."isReserved" DESC;
+            """;
+
+    private final String SORT_BY_DESC_ORDER = """
+            SELECT * FROM apartment LEFT JOIN public.user
+            ON apartment."reservedBy" = public.user.id
+            ORDER BY apartment.'%s' DESC;
+            """;
+
+    private ApartmentStorage() {
+    }
+
+    public static ApartmentStorage getInstance() {
+        if (instance == null) {
+            synchronized (ApartmentStorage.class) {
+                if (instance == null) {
+                    instance = new ApartmentStorage();
                 }
             }
         }
@@ -46,18 +89,19 @@ public class ApartmentStorage {
 
     /**
      * Method: add apartment to original list.
+     *
      * @param apartment - an Apartment instance
      */
-    public void addApartment(Apartment apartment){
+    public void addApartment(Apartment apartment) {
         long apartmentId = apartment.getId();
         double price = apartment.getPrice();
         boolean isReserved = apartment.getIsReserved();
         ZonedDateTime createdAt = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime updatedAt = ZonedDateTime.now(ZoneId.systemDefault());
 
-        try(Connection connection = DataSource.getConnection();
+        try (Connection connection = DataSource.getConnection();
         ) {
-            PreparedStatement pst = connection.prepareStatement(INSET_INTO_APARTMENT_QUERY);
+            PreparedStatement pst = connection.prepareStatement(INSET_APARTMENT_QUERY);
             pst.setLong(1, apartmentId);
             pst.setDouble(2, price);
             pst.setBoolean(3, isReserved);
@@ -71,7 +115,7 @@ public class ApartmentStorage {
         }
     }
 
-    public void updateApartment(Apartment apartment){
+    public void updateApartment(Apartment apartment) {
         long apartmentId = apartment.getId();
         double price = apartment.getPrice();
         boolean isReserved = apartment.getIsReserved();
@@ -79,8 +123,8 @@ public class ApartmentStorage {
         ZonedDateTime createdAt = apartment.getCreatedAt();
         ZonedDateTime updatedAt = apartment.getUpdatedAt();
 
-        String SQL_QUERY = String.format(UPDATE_APARTMENT_QUERY, apartment.getId() );
-        try(Connection connection = DataSource.getConnection();
+        String SQL_QUERY = String.format(UPDATE_APARTMENT_QUERY, apartment.getId());
+        try (Connection connection = DataSource.getConnection();
         ) {
             PreparedStatement pst = connection.prepareStatement(SQL_QUERY);
             pst.setLong(1, apartmentId);
@@ -99,14 +143,13 @@ public class ApartmentStorage {
     /**
      * @return the original Apartments list
      */
-    public List<Apartment> getApartments(){
+    public List<Apartment> getApartments() {
         List<Apartment> apartmentList = new ArrayList<>();
-        String SQLQuery = "SELECT * FROM apartment LEFT JOIN public.user ON apartment.\"reservedBy\" = public.user.id;";
 
-        try(Connection connection = DataSource.getConnection();
-            PreparedStatement pst = connection.prepareStatement(SQLQuery);
-            ResultSet results = pst.executeQuery();
-        ){
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement pst = connection.prepareStatement(SELECT_ALL_APARTMENT);
+             ResultSet results = pst.executeQuery();
+        ) {
             while (results.next()) {
                 apartmentList.add(mapResultSetToApartment(results));
             }
@@ -120,19 +163,16 @@ public class ApartmentStorage {
     /**
      * Return Optional<Apartment> if given ID it exists in the Apartment Storage,
      * else return an empty Optional
+     *
      * @param apartmentId apartment ID
      * @return an Apartment Optional by given ID
      */
-    public Optional<Apartment> getApartmentById(int apartmentId){
-        String SQLQuery = String.format("""
-                SELECT * FROM apartment LEFT JOIN public.user
-                ON apartment.\"reservedBy\" = public.user.id
-                WHERE apartment.id = '%d';
-                """, apartmentId);
-        try(Connection connection = DataSource.getConnection();
-            PreparedStatement pst = connection.prepareStatement(SQLQuery);
-            ResultSet results = pst.executeQuery();
-        ){
+    public Optional<Apartment> getApartmentById(int apartmentId) {
+        String SQLQuery = String.format(SELECT_APARTMENT_BY_ID, apartmentId);
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement pst = connection.prepareStatement(SQLQuery);
+             ResultSet results = pst.executeQuery();
+        ) {
             Apartment apartment = null;
             if (results.next()) {
                 apartment = mapResultSetToApartment(results);
@@ -146,17 +186,12 @@ public class ApartmentStorage {
     /**
      * @return a new ArrayList sorted by Apartment price, in ASC order.
      */
-    public List<Apartment> sortApartmentByPrice(){
+    public List<Apartment> sortApartmentByPrice() {
         List<Apartment> apartmentList = new ArrayList<>();
-        String SQLQuery = """
-                SELECT * FROM apartment LEFT JOIN public.user
-                	ON apartment."reservedBy" = public.user.id
-                	ORDER BY apartment.price DESC;
-                """;
-        try(Connection connection = DataSource.getConnection();
-            PreparedStatement pst = connection.prepareStatement(SQLQuery);
-            ResultSet results = pst.executeQuery();
-        ){
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement pst = connection.prepareStatement(SORT_BY_PRICE);
+             ResultSet results = pst.executeQuery();
+        ) {
             while (results.next()) {
                 apartmentList.add(mapResultSetToApartment(results));
             }
@@ -169,17 +204,12 @@ public class ApartmentStorage {
     /**
      * @return a new ArrayList sorted by Apartment ID, in ASC order.
      */
-    public List<Apartment> sortApartmentById(){
+    public List<Apartment> sortApartmentById() {
         List<Apartment> apartmentList = new ArrayList<>();
-        String SQLQuery = """
-                SELECT * FROM apartment LEFT JOIN public.user
-                	ON apartment."reservedBy" = public.user.id
-                	ORDER BY apartment.id ASC;
-                """;
-        try(Connection connection = DataSource.getConnection();
-            PreparedStatement pst = connection.prepareStatement(SQLQuery);
-            ResultSet results = pst.executeQuery();
-        ){
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement pst = connection.prepareStatement(SORT_BY_ID);
+             ResultSet results = pst.executeQuery();
+        ) {
             while (results.next()) {
                 apartmentList.add(mapResultSetToApartment(results));
             }
@@ -194,15 +224,10 @@ public class ApartmentStorage {
      */
     public List<Apartment> sortApartmentByClientName() {
         List<Apartment> apartmentList = new ArrayList<>();
-        String SQLQuery = """
-                SELECT * FROM apartment LEFT JOIN public.user
-                	ON apartment."reservedBy" = public.user.id
-                	ORDER BY public.user.first_name ASC;
-                """;
-        try(Connection connection = DataSource.getConnection();
-            PreparedStatement pst = connection.prepareStatement(SQLQuery);
-            ResultSet results = pst.executeQuery();
-        ){
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement pst = connection.prepareStatement(SORT_BY_USERNAME);
+             ResultSet results = pst.executeQuery();
+        ) {
             while (results.next()) {
                 apartmentList.add(mapResultSetToApartment(results));
             }
@@ -215,17 +240,13 @@ public class ApartmentStorage {
     /**
      * @return a new ArrayList sorted by Reservation status, in DESC order.
      */
-    public List<Apartment> sortedApartmentByReservationStatus(){
+    public List<Apartment> sortedApartmentByReservationStatus() {
         List<Apartment> apartmentList = new ArrayList<>();
-        String SQLQuery = """
-                SELECT * FROM apartment LEFT JOIN public.user
-                	ON apartment."reservedBy" = public.user.id
-                    ORDER BY apartment."isReserved" DESC;
-                """;
-        try(Connection connection = DataSource.getConnection();
-            PreparedStatement pst = connection.prepareStatement(SQLQuery);
-            ResultSet results = pst.executeQuery();
-        ){
+
+        try (Connection connection = DataSource.getConnection();
+             PreparedStatement pst = connection.prepareStatement(SORT_BY_RESERVATION_STATUS);
+             ResultSet results = pst.executeQuery();
+        ) {
             while (results.next()) {
                 apartmentList.add(mapResultSetToApartment(results));
             }
@@ -243,9 +264,9 @@ public class ApartmentStorage {
         apartment.setUpdatedAt(timestampToZonedDateTime(results.getTimestamp(6)));
 
         User user = null;
-        if(!results.getBoolean(3)){
+        if (!results.getBoolean(3)) {
             apartment.setReservedBy(user);
-        }else {
+        } else {
             user = new User();
             user.setId(results.getLong(7));
             user.setFistName(results.getString(8));
@@ -257,7 +278,8 @@ public class ApartmentStorage {
         }
         return apartment;
     }
-    private ZonedDateTime timestampToZonedDateTime(Timestamp timestamp){
+
+    private ZonedDateTime timestampToZonedDateTime(Timestamp timestamp) {
         return timestamp.toInstant().atZone(ZoneId.systemDefault());
     }
 }
