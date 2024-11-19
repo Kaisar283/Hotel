@@ -35,13 +35,6 @@ public class UserRepository {
     }
 
     public int saveUser(User user){
-        long userId = user.getId();
-        String firstName = user.getFistName();
-        String lastName = user.getLastName();
-        String userRole = user.getUserRole().toString();
-        ZonedDateTime createdAt = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime updatedAt = ZonedDateTime.now(ZoneId.systemDefault());
-
         String SQL_QUERY = """
                 INSERT INTO public."user"(
                 	id, first_name, last_name, user_role, created_at, updated_at)
@@ -50,12 +43,14 @@ public class UserRepository {
         try(Connection connection = DataSource.getConnection();
         ) {
             PreparedStatement pst = connection.prepareStatement(SQL_QUERY);
-            pst.setLong(1, userId);
-            pst.setString(2, firstName);
-            pst.setString(3, lastName);
-            pst.setString(4, userRole);
-            pst.setTimestamp(5, Timestamp.from(createdAt.toInstant()));
-            pst.setTimestamp(6, Timestamp.from(updatedAt.toInstant()));
+            pst.setLong(1, user.getId());
+            pst.setString(2, user.getFistName());
+            pst.setString(3, user.getLastName());
+            pst.setString(4, user.getUserRole().toString());
+            pst.setTimestamp(5, Timestamp.from(
+                    ZonedDateTime.now(ZoneId.systemDefault()).toInstant()));
+            pst.setTimestamp(6, Timestamp.from(
+                    ZonedDateTime.now(ZoneId.systemDefault()).toInstant()));
             return pst.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);

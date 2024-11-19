@@ -19,6 +19,18 @@ public class ApartmentStorage {
     private static volatile ApartmentStorage instance;
     private DataSource dataSource;
 
+    private final String INSET_INTO_APARTMENT_QUERY = """
+                INSERT INTO public.apartment(
+                	id, price, "isReserved", "reservedBy", created_at, updated_at)
+                	VALUES (?, ?, ?, ?, ?, ?);
+                """;
+
+    private final String UPDATE_APARTMENT_QUERY = """
+                UPDATE public.apartment
+                	SET id=?, price=?, "isReserved"=?, "reservedBy"=?, created_at=?, updated_at=?
+                	WHERE id=%d;
+                """;
+
     private ApartmentStorage(){}
 
     public static ApartmentStorage getInstance(){
@@ -43,14 +55,9 @@ public class ApartmentStorage {
         ZonedDateTime createdAt = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime updatedAt = ZonedDateTime.now(ZoneId.systemDefault());
 
-        String SQL_QUERY = """
-                INSERT INTO public.apartment(
-                	id, price, "isReserved", "reservedBy", created_at, updated_at)
-                	VALUES (?, ?, ?, ?, ?, ?);
-                """;
         try(Connection connection = DataSource.getConnection();
         ) {
-            PreparedStatement pst = connection.prepareStatement(SQL_QUERY);
+            PreparedStatement pst = connection.prepareStatement(INSET_INTO_APARTMENT_QUERY);
             pst.setLong(1, apartmentId);
             pst.setDouble(2, price);
             pst.setBoolean(3, isReserved);
@@ -72,11 +79,7 @@ public class ApartmentStorage {
         ZonedDateTime createdAt = apartment.getCreatedAt();
         ZonedDateTime updatedAt = apartment.getUpdatedAt();
 
-        String SQL_QUERY = String.format("""
-                UPDATE public.apartment
-                	SET id=?, price=?, "isReserved"=?, "reservedBy"=?, created_at=?, updated_at=?
-                	WHERE id=%d;
-                """, apartment.getId() );
+        String SQL_QUERY = String.format(UPDATE_APARTMENT_QUERY, apartment.getId() );
         try(Connection connection = DataSource.getConnection();
         ) {
             PreparedStatement pst = connection.prepareStatement(SQL_QUERY);

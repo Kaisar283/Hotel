@@ -9,7 +9,7 @@ public class User {
     private Long id;
     private String fistName;
     private String lastName;
-    UserRole userRole;
+    private UserRole userRole;
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
 
