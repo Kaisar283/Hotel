@@ -20,8 +20,8 @@ jobs:
         image: postgres:latest
         env:
           POSTGRES_DB: hotel-db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: admin
+          POSTGRES_USER: ${{ secrets.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
