@@ -15,7 +15,7 @@ public class UserRepository {
 
     private final String SELECT_BY_ID_QUERY = "SELECT * FROM public.\"user\" WHERE \"user\".id = '%d'";
 
-    private final String INSET_USER_QUERY = """
+    private final String INSERT_USER_QUERY = """
             INSERT INTO public."user"(
             	id, first_name, last_name, user_role, created_at, updated_at)
             	VALUES (?, ?, ?, ?, ?, ?);
@@ -42,7 +42,7 @@ public class UserRepository {
     public int saveUser(User user) {
         try (Connection connection = DataSource.getConnection()
         ) {
-            PreparedStatement pst = connection.prepareStatement(INSET_USER_QUERY);
+            PreparedStatement pst = connection.prepareStatement(INSERT_USER_QUERY);
             pst.setLong(1, user.getId());
             pst.setString(2, user.getFistName());
             pst.setString(3, user.getLastName());

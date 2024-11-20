@@ -19,7 +19,7 @@ public class ApartmentStorage {
     private static volatile ApartmentStorage instance;
     private DataSource dataSource;
 
-    private final String INSET_APARTMENT_QUERY = """
+    private final String INSERT_APARTMENT_QUERY = """
             INSERT INTO public.apartment(
             id, price, "isReserved", "reservedBy", created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?);
@@ -101,7 +101,7 @@ public class ApartmentStorage {
 
         try (Connection connection = DataSource.getConnection();
         ) {
-            PreparedStatement pst = connection.prepareStatement(INSET_APARTMENT_QUERY);
+            PreparedStatement pst = connection.prepareStatement(INSERT_APARTMENT_QUERY);
             pst.setLong(1, apartmentId);
             pst.setDouble(2, price);
             pst.setBoolean(3, isReserved);
