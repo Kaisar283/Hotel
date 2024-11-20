@@ -11,7 +11,7 @@ import kz.andersen.java_intensive_13.exception.AlreadyReservedException;
 import kz.andersen.java_intensive_13.handler.ExceptionHandler;
 import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.models.User;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 
 import java.io.BufferedReader;
@@ -53,8 +53,8 @@ public class ReserveApartmentServlet extends HttpServlet {
         try{
             String jsonRequest = jsonBuilder.toString();
             Apartment transientApartment = objectMapper.readValue(jsonRequest, Apartment.class);
-            Client client = transientApartment.getReservedBy();
-            ResultCode resultCode = apartmentService.reserveApartment(transientApartment.getId(), client);
+            User user = transientApartment.getReservedBy();
+            ResultCode resultCode = apartmentService.reserveApartment(transientApartment.getId(), user);
             String jsonResponse = objectMapper.writeValueAsString(resultCode);
             resp.getWriter().write(jsonResponse);
         }catch (ResourceNotFoundException exception){

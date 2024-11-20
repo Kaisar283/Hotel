@@ -8,7 +8,7 @@ import kz.andersen.java_intensive_13.exception.AlreadyReservedException;
 import kz.andersen.java_intensive_13.handler.ExceptionHandler;
 import kz.andersen.java_intensive_13.exception.ResourceNotFoundException;
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.Client;
+import kz.andersen.java_intensive_13.models.User;
 import kz.andersen.java_intensive_13.services.ApartmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,18 +64,18 @@ class ReserveApartmentServletTest {
     void reserveApartmentSuccess() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
-        Client client = new Client();
-        client.setName("John");
-        apartment.setReservedBy(client);
+        User user = new User();
+        user.setFistName("John");
+        apartment.setReservedBy(user);
         apartment.setIsReserved(true);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(jsonRequest)));
         when(objectMapper.readValue(jsonRequest, Apartment.class)).thenReturn(apartment);
-        when(apartmentService.reserveApartment(1, client)).thenReturn(ResultCode.SUCCESS);
+        when(apartmentService.reserveApartment(1, user)).thenReturn(ResultCode.SUCCESS);
 
         reserveApartmentServlet.doPost(request, response);
 
-        verify(apartmentService).reserveApartment(1, client);
+        verify(apartmentService).reserveApartment(1, user);
         verify(response).setContentType("application/json");
         verify(response).setCharacterEncoding("UTF-8");
     }
@@ -84,15 +84,15 @@ class ReserveApartmentServletTest {
     void reserveApartmentResourceNotFound() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
-        Client client = new Client();
-        client.setName("John");
-        apartment.setReservedBy(client);
+        User user = new User();
+        user.setFistName("John");
+        apartment.setReservedBy(user);
         apartment.setIsReserved(true);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(jsonRequest)));
         when(objectMapper.readValue(jsonRequest, Apartment.class)).thenReturn(apartment);
         doThrow(new ResourceNotFoundException("Apartment not found"))
-                .when(apartmentService).reserveApartment(1, client);
+                .when(apartmentService).reserveApartment(1, user);
 
         reserveApartmentServlet.doPost(request, response);
 
@@ -103,15 +103,15 @@ class ReserveApartmentServletTest {
     void reserveApartmentAlreadyReserved() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
         Apartment apartment = new Apartment(1, 1000.0);
-        Client client = new Client();
-        client.setName("John");
-        apartment.setReservedBy(client);
+        User user = new User();
+        user.setFistName("John");
+        apartment.setReservedBy(user);
         apartment.setIsReserved(true);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(jsonRequest)));
         when(objectMapper.readValue(jsonRequest, Apartment.class)).thenReturn(apartment);
         doThrow(new AlreadyReservedException("Apartment already reserved"))
-                .when(apartmentService).reserveApartment(1, client);
+                .when(apartmentService).reserveApartment(1, user);
 
         reserveApartmentServlet.doPost(request, response);
 

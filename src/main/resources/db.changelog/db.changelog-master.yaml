@@ -1,0 +1,3 @@
+databaseChangeLog:
+  - include:
+      file: src/main/resources/db.changelog/v1-changelog/v1-changeset-collection.yaml

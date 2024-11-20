@@ -1,0 +1,15 @@
+databaseChangeLog:
+  -  changeSet:
+       id:  addForeignKeyConstraint
+       author:  Kaisar Toktarkozha
+       changes:
+         - addForeignKeyConstraint:
+             baseTableName: apartment
+             baseColumnNames: reservedBy
+             baseTableSchemaName: public
+             constraintName: fk_apartment_user
+             onDelete: CASCADE
+             onUpdate: CASCADE
+             referencedTableName: user
+             referencedColumnNames: id
+             referencedTableSchemaName: public

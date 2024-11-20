@@ -1,9 +1,8 @@
 package kz.andersen.java_intensive_13.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 public class Apartment {
@@ -12,7 +11,9 @@ public class Apartment {
     private double price;
     @JsonProperty("isReserved")
     private boolean isReserved;
-    private Client reservedBy;
+    private User reservedBy;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime updatedAt;
 
     public Apartment() {
         this.id = counter++;
@@ -62,12 +63,28 @@ public class Apartment {
         isReserved = reserved;
     }
 
-    public Client getReservedBy() {
+    public User getReservedBy() {
         return reservedBy;
     }
 
-    public void setReservedBy(Client reservedBy) {
+    public void setReservedBy(User reservedBy) {
         this.reservedBy = reservedBy;
+    }
+
+    public ZonedDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(ZonedDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public ZonedDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(ZonedDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override
