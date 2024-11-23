@@ -46,24 +46,3 @@ databaseChangeLog:
             columnName:  reservedBy
             schemaName:  public
             tableName:  apartment
-
-  - changeSet:
-      author: Kaisar Toktarkozha
-      id: rename-reservedBy-to-user
-      changes:
-        - renameColumn:
-            columnDataType: BIGINT
-            newColumnName: user
-            oldColumnName: reservedBy
-            schemaName: public
-            tableName: apartment
-  - changeSet:
-      author: Kaisar Toktarkozha
-      id: rename-user-to-user_id
-      changes:
-        - renameColumn:
-            columnDataType: BIGINT
-            newColumnName: user_id
-            oldColumnName: user
-            schemaName: public
-            tableName: apartment

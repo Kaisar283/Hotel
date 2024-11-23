@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: dropAllForeignKeyConstraints
+      author: Kaisar Toktarkozha
+      changes:
+        - dropAllForeignKeyConstraints:
+            baseTableName: apartment
+            baseTableSchemaName: public
+
+  - changeSet:
+      id: changeForeignKeyConstraint
+      author: Kaisar Toktarkozha
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: apartment
+            baseColumnNames: user_id
+            baseTableSchemaName: public
+            constraintName: fk_apartment_user
+            referencedTableName: user
+            referencedColumnNames: id
+            referencedTableSchemaName: public
