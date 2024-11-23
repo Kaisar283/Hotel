@@ -53,7 +53,7 @@ public class ReserveApartmentServlet extends HttpServlet {
         try{
             String jsonRequest = jsonBuilder.toString();
             Apartment transientApartment = objectMapper.readValue(jsonRequest, Apartment.class);
-            User user = transientApartment.getReservedBy();
+            User user = transientApartment.getUser();
             ResultCode resultCode = apartmentService.reserveApartment(transientApartment.getId(), user);
             String jsonResponse = objectMapper.writeValueAsString(resultCode);
             resp.getWriter().write(jsonResponse);

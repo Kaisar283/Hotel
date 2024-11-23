@@ -1,91 +1,21 @@
 package kz.andersen.java_intensive_13.repository;
 
-import kz.andersen.java_intensive_13.db_config.DataSource;
-import kz.andersen.java_intensive_13.enums.UserRole;
+import kz.andersen.java_intensive_13.config.HibernateConfig;
 import kz.andersen.java_intensive_13.models.Apartment;
-import kz.andersen.java_intensive_13.models.User;
-import kz.andersen.java_intensive_13.services.ApartmentService;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
-import javax.xml.crypto.Data;
-import java.sql.*;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 
-import static java.sql.Types.BIGINT;
+import static kz.andersen.java_intensive_13.statics.ApartmentHQL.*;
 
+@Slf4j
 public class ApartmentStorage {
 
-    private static volatile ApartmentStorage instance;
-    private DataSource dataSource;
-
-    private final String INSERT_APARTMENT_QUERY = """
-            INSERT INTO public.apartment(
-            id, price, "isReserved", "reservedBy", created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?);
-            """;
-
-
-    private final String UPDATE_APARTMENT_QUERY = """
-            UPDATE public.apartment
-            SET id=?, price=?, "isReserved"=?, "reservedBy"=?, created_at=?, updated_at=?
-            WHERE id=%d;
-            """;
-
-    private final String SELECT_ALL_APARTMENT = """
-            SELECT * FROM apartment LEFT JOIN public.user
-            ON apartment.\"reservedBy\" = public.user.id;
-            """;
-
-    private final String SELECT_APARTMENT_BY_ID = """
-            SELECT * FROM apartment LEFT JOIN public.user
-            ON apartment.\"reservedBy\" = public.user.id
-            WHERE apartment.id = '%d';
-            """;
-
-    private final String SORT_BY_ID = """
-            SELECT * FROM apartment LEFT JOIN public.user
-            ON apartment."reservedBy" = public.user.id
-            ORDER BY apartment.id ASC;
-            """;
-
-    private final String SORT_BY_PRICE = """
-            SELECT * FROM apartment LEFT JOIN public.user
-            ON apartment."reservedBy" = public.user.id
-            ORDER BY apartment.price DESC;
-            """;
-
-    private final String SORT_BY_USERNAME = """
-            SELECT * FROM apartment LEFT JOIN public.user
-            ON apartment."reservedBy" = public.user.id
-            ORDER BY public.user.first_name ASC;
-            """;
-
-    private final String SORT_BY_RESERVATION_STATUS = """
-            SELECT * FROM apartment LEFT JOIN public.user
-            ON apartment."reservedBy" = public.user.id
-            ORDER BY apartment."isReserved" DESC;
-            """;
-
-    private final String SORT_BY_DESC_ORDER = """
-            SELECT * FROM apartment LEFT JOIN public.user
-            ON apartment."reservedBy" = public.user.id
-            ORDER BY apartment.'%s' DESC;
-            """;
-
-    private ApartmentStorage() {
-    }
-
-    public static ApartmentStorage getInstance() {
-        if (instance == null) {
-            synchronized (ApartmentStorage.class) {
-                if (instance == null) {
-                    instance = new ApartmentStorage();
-                }
-            }
-        }
-        return instance;
-    }
+    private SessionFactory sessionFactory = HibernateConfig.buildSessionFactory();
 
     /**
      * Method: add apartment to original list.
@@ -93,70 +23,48 @@ public class ApartmentStorage {
      * @param apartment - an Apartment instance
      */
     public void addApartment(Apartment apartment) {
-        long apartmentId = apartment.getId();
-        double price = apartment.getPrice();
-        boolean isReserved = apartment.getIsReserved();
-        ZonedDateTime createdAt = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime updatedAt = ZonedDateTime.now(ZoneId.systemDefault());
+        if (apartment == null) {
+            log.warn("Apartment is null, nothing to save.");
+            return;
+        }
 
-        try (Connection connection = DataSource.getConnection();
-        ) {
-            PreparedStatement pst = connection.prepareStatement(INSERT_APARTMENT_QUERY);
-            pst.setLong(1, apartmentId);
-            pst.setDouble(2, price);
-            pst.setBoolean(3, isReserved);
-            pst.setNull(4, BIGINT);
-            pst.setTimestamp(5, Timestamp.from(createdAt.toInstant()));
-            pst.setTimestamp(6, Timestamp.from(updatedAt.toInstant()));
-            int i = pst.executeUpdate();
+        Transaction transaction = null;
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.persist(apartment);
+            transaction.commit();
+            log.info("Apartment saved: {}", apartment);
+        } catch (Exception e) {
+            if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
+            }
+            log.error("Error occurred while saving apartment: {}", apartment, e);
+            throw new RuntimeException("Failed to save apartment", e);
         }
     }
+
 
     public void updateApartment(Apartment apartment) {
-        long apartmentId = apartment.getId();
-        double price = apartment.getPrice();
-        boolean isReserved = apartment.getIsReserved();
-        long userId = apartment.getReservedBy().getId();
-        ZonedDateTime createdAt = apartment.getCreatedAt();
-        ZonedDateTime updatedAt = apartment.getUpdatedAt();
-
-        String SQL_QUERY = String.format(UPDATE_APARTMENT_QUERY, apartment.getId());
-        try (Connection connection = DataSource.getConnection();
-        ) {
-            PreparedStatement pst = connection.prepareStatement(SQL_QUERY);
-            pst.setLong(1, apartmentId);
-            pst.setDouble(2, price);
-            pst.setBoolean(3, isReserved);
-            pst.setLong(4, userId);
-            pst.setTimestamp(5, Timestamp.from(createdAt.toInstant()));
-            pst.setTimestamp(6, Timestamp.from(updatedAt.toInstant()));
-            int i = pst.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        if (apartment == null) {
+            log.warn("Apartment is null, nothing to update.");
+            return;
         }
-    }
 
-    /**
-     * @return the original Apartments list
-     */
-    public List<Apartment> getApartments() {
-        List<Apartment> apartmentList = new ArrayList<>();
+        Transaction transaction = null;
 
-        try (Connection connection = DataSource.getConnection();
-             PreparedStatement pst = connection.prepareStatement(SELECT_ALL_APARTMENT);
-             ResultSet results = pst.executeQuery();
-        ) {
-            while (results.next()) {
-                apartmentList.add(mapResultSetToApartment(results));
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            Apartment mergedApartment = session.merge(apartment);
+            transaction.commit();
+            log.info("Apartment updated: {}", mergedApartment);
+        } catch (Exception e) {
+            if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("Error occurred while updating apartment: {}", apartment, e);
+            throw new RuntimeException("Failed to update apartment", e);
         }
-        return apartmentList;
     }
 
 
@@ -167,119 +75,93 @@ public class ApartmentStorage {
      * @param apartmentId apartment ID
      * @return an Apartment Optional by given ID
      */
-    public Optional<Apartment> getApartmentById(int apartmentId) {
-        String SQLQuery = String.format(SELECT_APARTMENT_BY_ID, apartmentId);
-        try (Connection connection = DataSource.getConnection();
-             PreparedStatement pst = connection.prepareStatement(SQLQuery);
-             ResultSet results = pst.executeQuery();
-        ) {
-            Apartment apartment = null;
-            if (results.next()) {
-                apartment = mapResultSetToApartment(results);
-            }
-            return apartment == null ? Optional.empty() : Optional.of(apartment);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public Optional<Apartment> getApartmentById(Integer apartmentId) {
+        if (apartmentId == null) {
+            log.warn("Apartment ID is null, returning empty result.");
+            return Optional.empty();
         }
+
+        try (Session session = sessionFactory.openSession()) {
+            Apartment apartment = session.get(Apartment.class, apartmentId);
+
+            if (apartment != null) {
+                log.info("Found Apartment: {}", apartment);
+                return Optional.of(apartment);
+            } else {
+                log.info("No Apartment found with ID: {}", apartmentId);
+                return Optional.empty();
+            }
+        } catch (Exception e) {
+            log.error("Error occurred while retrieving apartment with ID: {}", apartmentId, e);
+            throw new RuntimeException("Error retrieving apartment", e);
+        }
+    }
+
+
+    /**
+     * @return the original Apartments list
+     */
+    public List<Apartment> getApartments() {
+        return getApartmentListByGivenHQL(FIND_ALL_APARTMENT);
     }
 
     /**
      * @return a new ArrayList sorted by Apartment price, in ASC order.
      */
     public List<Apartment> sortApartmentByPrice() {
-        List<Apartment> apartmentList = new ArrayList<>();
-        try (Connection connection = DataSource.getConnection();
-             PreparedStatement pst = connection.prepareStatement(SORT_BY_PRICE);
-             ResultSet results = pst.executeQuery();
-        ) {
-            while (results.next()) {
-                apartmentList.add(mapResultSetToApartment(results));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return apartmentList;
+        return getApartmentListByGivenHQL(SORT_BY_PRICE_HQL);
     }
+
 
     /**
      * @return a new ArrayList sorted by Apartment ID, in ASC order.
      */
     public List<Apartment> sortApartmentById() {
-        List<Apartment> apartmentList = new ArrayList<>();
-        try (Connection connection = DataSource.getConnection();
-             PreparedStatement pst = connection.prepareStatement(SORT_BY_ID);
-             ResultSet results = pst.executeQuery();
-        ) {
-            while (results.next()) {
-                apartmentList.add(mapResultSetToApartment(results));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return apartmentList;
+        return getApartmentListByGivenHQL(SORTED_BY_ID_HQL);
     }
 
     /**
      * @return a new ArrayList sorted by User name, in DESC order.
      */
     public List<Apartment> sortApartmentByClientName() {
-        List<Apartment> apartmentList = new ArrayList<>();
-        try (Connection connection = DataSource.getConnection();
-             PreparedStatement pst = connection.prepareStatement(SORT_BY_USERNAME);
-             ResultSet results = pst.executeQuery();
-        ) {
-            while (results.next()) {
-                apartmentList.add(mapResultSetToApartment(results));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return apartmentList;
+        return getApartmentListByGivenHQL(SORT_BY_USERNAME_HQL);
     }
+
 
     /**
      * @return a new ArrayList sorted by Reservation status, in DESC order.
      */
     public List<Apartment> sortedApartmentByReservationStatus() {
-        List<Apartment> apartmentList = new ArrayList<>();
+        return getApartmentListByGivenHQL(SORT_BY_RESERVATION_STATUS_HQL);
+    }
 
-        try (Connection connection = DataSource.getConnection();
-             PreparedStatement pst = connection.prepareStatement(SORT_BY_RESERVATION_STATUS);
-             ResultSet results = pst.executeQuery();
-        ) {
-            while (results.next()) {
-                apartmentList.add(mapResultSetToApartment(results));
+    private void checkSessionFactory(){
+        if (sessionFactory == null) {
+            log.error("SessionFactory is not initialized.");
+            throw new IllegalStateException("SessionFactory is not initialized.");
+        }
+    }
+
+    private List<Apartment> getApartmentListByGivenHQL(String hql){
+        checkSessionFactory();
+
+        List<Apartment> apartments = new ArrayList<>();
+        Transaction transaction = null;
+
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            Query<Apartment> query = session.createQuery(
+                    hql,Apartment.class);
+
+            apartments = query.getResultList();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("Error occurred while retrieving apartments", e);
         }
-        return apartmentList;
-    }
-
-    private Apartment mapResultSetToApartment(ResultSet results) throws SQLException {
-        Apartment apartment = new Apartment(results.getInt(1),
-                results.getDouble(2));
-        apartment.setIsReserved(results.getBoolean(3));
-        apartment.setCreatedAt(timestampToZonedDateTime(results.getTimestamp(5)));
-        apartment.setUpdatedAt(timestampToZonedDateTime(results.getTimestamp(6)));
-
-        User user = null;
-        if (!results.getBoolean(3)) {
-            apartment.setReservedBy(user);
-        } else {
-            user = new User();
-            user.setId(results.getLong(7));
-            user.setFistName(results.getString(8));
-            user.setLastName(results.getString(9));
-            user.setUserRole(UserRole.valueOf(results.getString(10)));
-            user.setCreatedAt(timestampToZonedDateTime(results.getTimestamp(11)));
-            user.setUpdatedAt(timestampToZonedDateTime(results.getTimestamp(12)));
-            apartment.setReservedBy(user);
-        }
-        return apartment;
-    }
-
-    private ZonedDateTime timestampToZonedDateTime(Timestamp timestamp) {
-        return timestamp.toInstant().atZone(ZoneId.systemDefault());
+        return apartments;
     }
 }

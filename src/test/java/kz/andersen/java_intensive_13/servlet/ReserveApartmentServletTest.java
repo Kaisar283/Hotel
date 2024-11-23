@@ -63,11 +63,12 @@ class ReserveApartmentServletTest {
     @Test
     void reserveApartmentSuccess() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
-        Apartment apartment = new Apartment(1, 1000.0);
+        Apartment apartment = new Apartment(1000.0);
+        apartment.setId(1);
         User user = new User();
-        user.setFistName("John");
-        apartment.setReservedBy(user);
-        apartment.setIsReserved(true);
+        user.setFirstName("John");
+        apartment.setUser(user);
+        apartment.setReserved(true);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(jsonRequest)));
         when(objectMapper.readValue(jsonRequest, Apartment.class)).thenReturn(apartment);
@@ -83,11 +84,12 @@ class ReserveApartmentServletTest {
     @Test
     void reserveApartmentResourceNotFound() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
-        Apartment apartment = new Apartment(1, 1000.0);
+        Apartment apartment = new Apartment(1000.0);
+        apartment.setId(1);
         User user = new User();
-        user.setFistName("John");
-        apartment.setReservedBy(user);
-        apartment.setIsReserved(true);
+        user.setFirstName("John");
+        apartment.setUser(user);
+        apartment.setReserved(true);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(jsonRequest)));
         when(objectMapper.readValue(jsonRequest, Apartment.class)).thenReturn(apartment);
@@ -102,11 +104,12 @@ class ReserveApartmentServletTest {
     @Test
     void reserveApartmentAlreadyReserved() throws Exception {
         String jsonRequest = "{\"id\":1,\"price\":1000.0,\"reservedBy\":{\"name\":\"John\"},\"reserved\":true}";
-        Apartment apartment = new Apartment(1, 1000.0);
+        Apartment apartment = new Apartment(1000.0);
+        apartment.setId(1);
         User user = new User();
-        user.setFistName("John");
-        apartment.setReservedBy(user);
-        apartment.setIsReserved(true);
+        user.setFirstName("John");
+        apartment.setUser(user);
+        apartment.setReserved(true);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(jsonRequest)));
         when(objectMapper.readValue(jsonRequest, Apartment.class)).thenReturn(apartment);

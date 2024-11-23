@@ -43,9 +43,10 @@ class ListApartmentServletTest {
     @Test
     void doGet() throws Exception{
         List<Apartment> apartments = new ArrayList<>();
-        apartments.add(new Apartment(1, 4000));
-        apartments.add(new Apartment(2, 5000));
-        apartments.add(new Apartment(3, 3000));
+
+        apartments.add(new Apartment(4000));
+        apartments.add(new Apartment(5000));
+        apartments.add(new Apartment(3000));
 
         when(apartmentService.getAllApartments()).thenReturn(apartments);
 
