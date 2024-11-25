@@ -3,19 +3,18 @@ package kz.andersen.java_intensive_13.models;
 import jakarta.persistence.*;
 import kz.andersen.java_intensive_13.enums.UserRole;
 import kz.andersen.java_intensive_13.hibernate.convertor.ZonedDateTimeConvertor;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 
 
-@Data
-@ToString
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = "userRole")
 @Entity
 @Table(name = "user", schema = "public")
 public class User extends AuditableEntity<Long> {

@@ -7,7 +7,8 @@ import lombok.*;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
