@@ -1,85 +1,45 @@
 package kz.andersen.java_intensive_13.models;
 
+import jakarta.persistence.*;
 import kz.andersen.java_intensive_13.enums.UserRole;
+import kz.andersen.java_intensive_13.hibernate.convertor.ZonedDateTimeConvertor;
+import lombok.*;
 
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Objects;
 
-public class User {
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(exclude = "userRole")
+@Entity
+@Table(name = "user", schema = "public")
+public class User extends AuditableEntity<Long> {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String fistName;
-    private String lastName;
-    private UserRole userRole;
-    private ZonedDateTime createdAt;
-    private ZonedDateTime updatedAt;
 
-    public User() {
-    }
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role")
+    private UserRole userRole;
 
     public User(String fistName) {
-        this.fistName = fistName;
+        this.firstName = fistName;
     }
 
     public User(long id, String fistName) {
         this.id = id;
-        this.fistName = fistName;
+        this.firstName = fistName;
         this.userRole = UserRole.USER;
-        this.createdAt = ZonedDateTime.now();
-        this.updatedAt = ZonedDateTime.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getFistName() {
-        return fistName;
-    }
-
-    public void setFistName(String name) {
-        this.fistName = name;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public UserRole getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(UserRole userRole) {
-        this.userRole = userRole;
-    }
-
-    public ZonedDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(ZonedDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public ZonedDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(ZonedDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "fistName='" + fistName + '\'' +
-                '}';
     }
 }

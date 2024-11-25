@@ -48,7 +48,8 @@ public class ReleaseApartmentServletTest {
 
     @Test
     public void doPostSuccess() throws Exception {
-        Apartment apartment = new Apartment(1, 5000.0);
+        Apartment apartment = new Apartment(5000.0);
+        apartment.setId(1);
         ResultCode resultCode = ResultCode.SUCCESS;
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(objectMapper.writeValueAsString(apartment))));
@@ -70,7 +71,8 @@ public class ReleaseApartmentServletTest {
 
     @Test
     public void doPostResourceNotFoundException() throws Exception {
-        Apartment apartment = new Apartment(1, 500.0);
+        Apartment apartment = new Apartment(500.0);
+        apartment.setId(1);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(objectMapper.writeValueAsString(apartment))));
         doThrow(new ResourceNotFoundException("Apartment not found"))
@@ -83,7 +85,8 @@ public class ReleaseApartmentServletTest {
 
     @Test
     public void doPostAlreadyReservedException() throws Exception {
-        Apartment apartment = new Apartment(1, 500.0);
+        Apartment apartment = new Apartment(500.0);
+        apartment.setId(1);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(objectMapper.writeValueAsString(apartment))));
         doThrow(new AlreadyReservedException("Apartment already reserved"))
@@ -96,7 +99,8 @@ public class ReleaseApartmentServletTest {
 
     @Test
     public void doPostGeneralException() throws Exception {
-        Apartment apartment = new Apartment(1, 500.0);
+        Apartment apartment = new Apartment(500.0);
+        apartment.setId(1);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(objectMapper.writeValueAsString(apartment))));
         doThrow(new RuntimeException("Unexpected error"))

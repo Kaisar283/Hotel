@@ -45,8 +45,8 @@ class RegisterApartmentServletTest {
     @Test
     public void doPost() throws Exception {
         String inputJson = "{\"price\":3000}";
-        Apartment apartment = new Apartment(1, 3000);
-        Apartment registeredApartment = new Apartment(1, 3000);
+        Apartment apartment = new Apartment(3000);
+        Apartment registeredApartment = new Apartment(3000);
 
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
         StringWriter stringWriter = new StringWriter();

@@ -1,128 +1,131 @@
 package kz.andersen.java_intensive_13.repository;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import kz.andersen.java_intensive_13.db_config.DataSource;
 import kz.andersen.java_intensive_13.enums.UserRole;
 import kz.andersen.java_intensive_13.models.User;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.xml.crypto.Data;
-import java.sql.*;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class UserRepositoryTest {
 
     @Mock
-    private Connection connection;
+    private SessionFactory sessionFactory;
 
     @Mock
-    private PreparedStatement preparedStatement;
+    private Session session;
 
     @Mock
-    private ResultSet resultSet;
+    private Transaction transaction;
 
     @InjectMocks
     private UserRepository userRepository;
 
     @BeforeEach
-    void setUp() throws SQLException {
-        MockitoAnnotations.openMocks(this);
+    void setUp() {
+        when(sessionFactory.openSession()).thenReturn(session);
     }
 
     @Test
-    void findUserById() throws SQLException {
-        try(MockedStatic<DataSource> mockedStatic = mockStatic(DataSource.class)) {
-            mockedStatic.when(DataSource::getConnection).thenReturn(connection);
+    void findUserById_userExists_returnsUser() {
+        Long userId = 1L;
+        User mockUser = new User();
+        mockUser.setId(userId);
 
-            long userId = 1L;
-            User mockUser = new User();
-            mockUser.setId(userId);
-            mockUser.setFistName("Rock");
-            mockUser.setLastName("Johnson");
-            mockUser.setUserRole(UserRole.ADMIN);
-            mockUser.setCreatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
-            mockUser.setUpdatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
+        when(session.get(User.class, userId)).thenReturn(mockUser);
 
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
-            when(resultSet.next()).thenReturn(true).thenReturn(false);
-            when(resultSet.getLong(1)).thenReturn(mockUser.getId());
-            when(resultSet.getString(2)).thenReturn(mockUser.getFistName());
-            when(resultSet.getString(3)).thenReturn(mockUser.getLastName());
-            when(resultSet.getString(4)).thenReturn(mockUser.getUserRole().toString());
-            when(resultSet.getTimestamp(5)).thenReturn(Timestamp.from(mockUser.getCreatedAt().toInstant()));
-            when(resultSet.getTimestamp(6)).thenReturn(Timestamp.from(mockUser.getUpdatedAt().toInstant()));
+        Optional<User> result = userRepository.findUserById(userId);
 
-            Optional<User> userOptional = userRepository.findUserById(userId);
-
-            assertTrue(userOptional.isPresent());
-            assertEquals(userId, userOptional.get().getId());
-            verify(preparedStatement, times(1)).executeQuery();
-        }
+        assertTrue(result.isPresent());
+        assertEquals(userId, result.get().getId());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
     @Test
-    void saveUser() throws SQLException {
-        try(MockedStatic<DataSource> mockedStatic = mockStatic(DataSource.class)) {
-            mockedStatic.when(DataSource::getConnection).thenReturn(connection);
+    void findUserById_userDoesNotExist_returnsEmpty() {
+        Long userId = 1L;
 
-            User mockUser = new User();
-            mockUser.setId(1L);
-            mockUser.setFistName("Rock");
-            mockUser.setLastName("Johnson");
-            mockUser.setUserRole(UserRole.ADMIN);
+        when(session.get(User.class, userId)).thenReturn(null);
 
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeUpdate()).thenReturn(1);
+        Optional<User> result = userRepository.findUserById(userId);
 
-            int result = userRepository.saveUser(mockUser);
-
-            assertEquals(1, result);
-            verify(preparedStatement, times(1)).executeUpdate();
-        }
+        assertFalse(result.isPresent());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
     @Test
-    void findAllUsers() throws SQLException {
-        try(MockedStatic<DataSource> mockedStatic = mockStatic(DataSource.class)) {
-            mockedStatic.when(DataSource::getConnection).thenReturn(connection);
+    void saveUser_validUser_savesUser() {
+        User user = new User();
+        user.setUserRole(UserRole.USER);
+        user.setFirstName("John");
 
-            User mockUser = new User();
-            mockUser.setId(1L);
-            mockUser.setFistName("Rock");
-            mockUser.setLastName("Johnson");
-            mockUser.setUserRole(UserRole.ADMIN);
-            mockUser.setCreatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
-            mockUser.setUpdatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
+        when(session.beginTransaction()).thenReturn(transaction);
 
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
-            when(resultSet.next()).thenReturn(true).thenReturn(false);
-            when(resultSet.getLong(1)).thenReturn(mockUser.getId());
-            when(resultSet.getString(2)).thenReturn(mockUser.getFistName());
-            when(resultSet.getString(3)).thenReturn(mockUser.getLastName());
-            when(resultSet.getString(4)).thenReturn(mockUser.getUserRole().toString());
-            when(resultSet.getTimestamp(5)).thenReturn(Timestamp.from(mockUser.getCreatedAt().toInstant()));
-            when(resultSet.getTimestamp(6)).thenReturn(Timestamp.from(mockUser.getUpdatedAt().toInstant()));
+        userRepository.saveUser(user);
 
-            List<User> users = userRepository.findAllUsers();
+        verify(sessionFactory).openSession();
+        verify(session).persist(user);
+        verify(transaction).commit();
+        verify(session).close();
+    }
 
-            assertNotNull(users);
-            assertEquals(1, users.size());
-            assertEquals(mockUser.getId(), users.get(0).getId());
-            verify(preparedStatement, times(1)).executeQuery();
-        }
+    @Test
+    void saveUser_transactionFails_rollsBack() {
+        User user = new User();
+
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException("Test exception")).when(session).persist(user);
+        when(transaction.getStatus()).thenReturn(TransactionStatus.ACTIVE);
+
+        assertThrows(RuntimeException.class, () -> userRepository.saveUser(user));
+
+        verify(transaction).rollback();
+        verify(session).close();
+    }
+
+    @Test
+    void findAllUsers_returnsUserList() {
+        List<User> mockUsers = List.of(new User(), new User());
+        when(session.createQuery("from User", User.class)).thenReturn(mock(Query.class));
+        Query<User> mockQuery = mock(Query.class);
+        when(session.createQuery("from User", User.class)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(mockUsers);
+
+        List<User> users = userRepository.findAllUsers();
+
+        assertEquals(mockUsers.size(), users.size());
+        verify(sessionFactory).openSession();
+        verify(session).close();
+    }
+
+    @Test
+    void findAllUsers_queryFails_rollsBack() {
+        when(session.beginTransaction()).thenReturn(transaction);
+        when(session.createQuery("from User", User.class)).thenThrow(new RuntimeException("Test exception"));
+        when(transaction.getStatus()).thenReturn(TransactionStatus.ACTIVE);
+
+        List<User> users = userRepository.findAllUsers();
+
+        assertTrue(users.isEmpty());
+        verify(transaction).rollback();
+        verify(session).close();
     }
 }

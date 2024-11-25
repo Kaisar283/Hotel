@@ -14,12 +14,18 @@ import java.util.*;
 
 public class ApartmentService {
 
-    private final ApartmentStorage apartmentStorage;
-    private final UserRepository userRepository;
+    private ApartmentStorage apartmentStorage;
+    private UserRepository userRepository;
 
     public ApartmentService() {
-        this.apartmentStorage = ApartmentStorage.getInstance();
+        this.apartmentStorage = new ApartmentStorage();
         this.userRepository = new UserRepository();
+    }
+
+    public ApartmentService(ApartmentStorage apartmentStorage,
+                            UserRepository userRepository){
+        this.apartmentStorage = apartmentStorage;
+        this.userRepository = userRepository;
     }
 
     public Optional<Apartment> getApartment(int apartmentId){
@@ -40,14 +46,14 @@ public class ApartmentService {
         Optional<User> userOptional = userRepository.findUserById(user.getId());
         if(apartmentOptional.isEmpty()){
             throw new ResourceNotFoundException("Apartment with id " + apartmentId + " is not found!");
-        } else if (apartmentOptional.get().getIsReserved()) {
+        } else if (apartmentOptional.get().isReserved()) {
             throw new AlreadyReservedException("Apartment with id " + apartmentId + " already reserved!");
         } else if (userOptional.isEmpty()) {
             throw new ResourceNotFoundException("User with id " + user.getId() + " is not found!");
         } else {
             Apartment apartment = apartmentStorage.getApartmentById(apartmentId).get();
-            apartment.setIsReserved(true);
-            apartment.setReservedBy(user);
+            apartment.setReserved(true);
+            apartment.setUser(user);
             apartmentStorage.updateApartment(apartment);
             return ResultCode.SUCCESS;
         }
@@ -59,11 +65,11 @@ public class ApartmentService {
             throw new ResourceNotFoundException("Apartment with id " + apartmentId + " is not found!");
         }else {
             Apartment apartment = apartmentOptional.get();
-            if(!apartment.getIsReserved()){
+            if(!apartment.isReserved()){
                 return ResultCode.NOT_RESERVED;
             }else {
-                apartment.setIsReserved(false);
-                apartment.setReservedBy(null);
+                apartment.setReserved(false);
+                apartment.setUser(null);
                 apartmentStorage.updateApartment(apartment);
                 return ResultCode.SUCCESS;
             }
@@ -100,5 +106,4 @@ public class ApartmentService {
         }
         return apartments.subList(startIndex, endIndex);
     }
-
 }

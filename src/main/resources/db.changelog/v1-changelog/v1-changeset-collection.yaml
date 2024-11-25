@@ -6,6 +6,6 @@ databaseChangeLog:
   - include:
       file: src/main/resources/db.changelog/v1-changelog/add-foreignKey-constraint.yaml
   - include:
-      file: src/main/resources/db.changelog/v1-changelog/test-data/insert-test-user.yaml
+      file: src/main/resources/db.changelog/v1-changelog/rename-apartment-fields.yaml
   - include:
-      file: src/main/resources/db.changelog/v1-changelog/test-data/insert-test-apartment.yaml
+      file: src/main/resources/db.changelog/v1-changelog/change-foreignKey-constraint.yaml

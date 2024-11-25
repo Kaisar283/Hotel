@@ -1,85 +1,85 @@
 package kz.andersen.java_intensive_13.repository;
 
-import kz.andersen.java_intensive_13.db_config.DataSource;
-import kz.andersen.java_intensive_13.enums.UserRole;
+import kz.andersen.java_intensive_13.config.HibernateConfig;
 import kz.andersen.java_intensive_13.models.User;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
-import java.sql.*;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
+@Slf4j
 public class UserRepository {
 
-    private final String SELECT_BY_ID_QUERY = "SELECT * FROM public.\"user\" WHERE \"user\".id = '%d'";
+    private SessionFactory sessionFactory = HibernateConfig.buildSessionFactory();
 
-    private final String INSERT_USER_QUERY = """
-            INSERT INTO public."user"(
-            	id, first_name, last_name, user_role, created_at, updated_at)
-            	VALUES (?, ?, ?, ?, ?, ?);
-            """;
+    public Optional<User> findUserById(Long userId) {
+        if (userId == null) {
+            log.warn("User ID is null, returning empty result.");
+            return Optional.empty();
+        }
 
-    private final String SELECT_ALL_QUERY = "SELECT * FROM public.\"user\";";
+        try (Session session = sessionFactory.openSession()) {
+            User user = session.get(User.class, userId);
 
-    public Optional<User> findUserById(long userId) {
-        String SQLQuery = String.format(SELECT_BY_ID_QUERY, userId);
-        try (Connection connection = DataSource.getConnection();
-             PreparedStatement pst = connection.prepareStatement(SQLQuery);
-             ResultSet results = pst.executeQuery()
-        ) {
-            User user = null;
-            if (results.next()) {
-                user = mapResultSetToUser(results);
+            if (user != null) {
+                log.info("Found Apartment: {}", user);
+                return Optional.of(user);
+            } else {
+                log.info("No Apartment found with ID: {}", userId);
+                return Optional.empty();
             }
-            return user == null ? Optional.empty() : Optional.of(user);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.error("Error occurred while retrieving user with ID: {}", userId, e);
+            throw new RuntimeException("Error retrieving user", e);
         }
     }
 
-    public int saveUser(User user) {
-        try (Connection connection = DataSource.getConnection()
-        ) {
-            PreparedStatement pst = connection.prepareStatement(INSERT_USER_QUERY);
-            pst.setLong(1, user.getId());
-            pst.setString(2, user.getFistName());
-            pst.setString(3, user.getLastName());
-            pst.setString(4, user.getUserRole().toString());
-            pst.setTimestamp(5, Timestamp.from(
-                    ZonedDateTime.now(ZoneId.systemDefault()).toInstant()));
-            pst.setTimestamp(6, Timestamp.from(
-                    ZonedDateTime.now(ZoneId.systemDefault()).toInstant()));
-            return pst.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public void saveUser(User user) {
+        if (user == null) {
+            log.warn("Apartment is null, nothing to save.");
+            return;
+        }
+
+        Transaction transaction = null;
+
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.persist(user);
+            transaction.commit();
+            log.info("User saved: {}", user);
+        } catch (Exception e) {
+            if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
+            }
+            log.error("Error occurred while saving user: {}", user, e);
+            throw new RuntimeException("Failed to save user", e);
         }
     }
 
     public List<User> findAllUsers() {
-        List<User> userList = new ArrayList<>();
-        try (Connection connection = DataSource.getConnection();
-             PreparedStatement pst = connection.prepareStatement(SELECT_ALL_QUERY);
-             ResultSet results = pst.executeQuery()
-        ) {
-            while (results.next()) {
-                userList.add(mapResultSetToUser(results));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return userList;
-    }
+        List<User> users = new ArrayList<>();
+        Transaction transaction = null;
 
-    private User mapResultSetToUser(ResultSet results) throws SQLException {
-        User user = new User();
-        user.setId(results.getLong(1));
-        user.setFistName(results.getString(2));
-        user.setLastName(results.getString(3));
-        user.setUserRole(UserRole.valueOf(results.getString(4)));
-        user.setCreatedAt(results.getTimestamp(5).toInstant().atZone(ZoneId.systemDefault()));
-        user.setUpdatedAt(results.getTimestamp(6).toInstant().atZone(ZoneId.systemDefault()));
-        return user;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            Query<User> query = session.createQuery(
+                    "from User",User.class);
+
+            users = query.getResultList();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
+            }
+            log.error("Error occurred while retrieving users", e);
+        }
+        return users;
     }
 }

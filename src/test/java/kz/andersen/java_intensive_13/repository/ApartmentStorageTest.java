@@ -4,11 +4,18 @@ import kz.andersen.java_intensive_13.db_config.DataSource;
 import kz.andersen.java_intensive_13.enums.UserRole;
 import kz.andersen.java_intensive_13.models.Apartment;
 import kz.andersen.java_intensive_13.models.User;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.sql.*;
@@ -17,296 +24,192 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.jar.JarOutputStream;
 
+import static kz.andersen.java_intensive_13.statics.ApartmentHQL.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ApartmentStorageTest {
 
     @Mock
-    private Connection connection;
+    private SessionFactory sessionFactory;
 
     @Mock
-    private PreparedStatement preparedStatement;
+    private Session session;
 
     @Mock
-    private ResultSet resultSet;
+    private Transaction transaction;
 
-    private final ApartmentStorage apartmentStorage = ApartmentStorage.getInstance();
+    @InjectMocks
+    private ApartmentStorage apartmentStorage;
 
-    ApartmentStorageTest() {
-    }
 
     @BeforeEach
-    public  void setApartmentStorage() throws Exception {
-        MockitoAnnotations.openMocks(this);
+    void setUp() {
+        when(sessionFactory.openSession()).thenReturn(session);
     }
 
     @Test
-    public void getApartmentById_returnApartment_ifExists() throws SQLException {
-        try(MockedStatic<DataSource> mockedStatic = mockStatic(DataSource.class)) {
-            mockedStatic.when(DataSource::getConnection).thenReturn(connection);
+    public void getApartmentById_returnApartment_ifExists(){
+        Apartment mockApartment = new Apartment();
+        mockApartment.setId(1);
+        mockApartment.setPrice(2000);
 
-            Apartment mockapartment = new Apartment(1, 1200);
-            mockapartment.setCreatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
-            mockapartment.setUpdatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
-            User mockUser = new User(1, "Alice");
-            mockUser.setUserRole(UserRole.USER);
+        when(session.get(Apartment.class, 1)).thenReturn(mockApartment);
 
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
-            when(resultSet.next()).thenReturn(true).thenReturn(false);
-            when(resultSet.getInt(1)).thenReturn(mockapartment.getId());
-            when(resultSet.getDouble(2)).thenReturn(mockapartment.getPrice());
-            when(resultSet.getBoolean(3)).thenReturn(mockapartment.getIsReserved());
-            when(resultSet.getLong(4)).thenReturn(mockUser.getId());
-            when(resultSet.getTimestamp(5)).thenReturn(Timestamp.from(mockapartment.getCreatedAt().toInstant()));
-            when(resultSet.getTimestamp(6)).thenReturn(Timestamp.from(mockapartment.getUpdatedAt().toInstant()));
+        Optional<Apartment> apartmentById = apartmentStorage.getApartmentById(1);
 
-            Optional<Apartment> apartmentById = apartmentStorage.getApartmentById(mockapartment.getId());
-
-            assertTrue(apartmentById.isPresent());
-            assertEquals(mockapartment.getId(), apartmentById.get().getId());
-            verify(preparedStatement, times(1)).executeQuery();
-        }
+        assertTrue(apartmentById.isPresent());
+        assertEquals(mockApartment.getId(), apartmentById.get().getId());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
     @Test
-    public void getApartmentById_returnEmpty_ifDoesNotExists() throws SQLException {
-        try(MockedStatic<DataSource> sourceMockedStatic = mockStatic(DataSource.class)) {
-            sourceMockedStatic.when(DataSource::getConnection).thenReturn(connection);
-            Apartment mockapartment = new Apartment(1, 1200);
+    public void getApartmentById_returnEmpty_ifDoesNotExists(){
+        Integer apartmentId = 3;
+        when(session.get(Apartment.class, 3)).thenReturn(null);
 
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
-            when(resultSet.next()).thenReturn(false);
+        Optional<Apartment> apartmentById = apartmentStorage.getApartmentById(apartmentId);
 
-            Optional<Apartment> apartmentById = apartmentStorage.getApartmentById(mockapartment.getId());
-
-            verify(connection, times(1)).prepareStatement(anyString());
-            assertTrue(apartmentById.isEmpty());
-        }
+        assertTrue(apartmentById.isEmpty());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
     @Test
-    public void getApartments_returnListOfApartment() throws SQLException {
-        try(MockedStatic<DataSource> sourceMockedStatic = mockStatic(DataSource.class)) {
-            sourceMockedStatic.when(DataSource::getConnection).thenReturn(connection);
-            Apartment mockapartment = new Apartment(1, 1200);
-            mockapartment.setCreatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
-            mockapartment.setUpdatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
-            User mockUser = new User(1, "Alice");
-            mockUser.setUserRole(UserRole.USER);
+    public void getApartments_returnListOfApartment(){
+        List<Apartment> mockApartments = getPreparedApartment();
+        when(session.createQuery(FIND_ALL_APARTMENT, Apartment.class)).thenReturn(mock(Query.class));
+        Query<Apartment> mockQuery = mock(Query.class);
+        when(session.createQuery(FIND_ALL_APARTMENT, Apartment.class)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(mockApartments);
 
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
-            when(resultSet.next()).thenReturn(true).thenReturn(false);
-            when(resultSet.getInt(1)).thenReturn(mockapartment.getId());
-            when(resultSet.getDouble(2)).thenReturn(mockapartment.getPrice());
-            when(resultSet.getBoolean(3)).thenReturn(mockapartment.getIsReserved());
-            when(resultSet.getLong(4)).thenReturn(mockUser.getId());
-            when(resultSet.getTimestamp(5)).thenReturn(Timestamp.from(mockapartment.getCreatedAt().toInstant()));
-            when(resultSet.getTimestamp(6)).thenReturn(Timestamp.from(mockapartment.getUpdatedAt().toInstant()));
+        List<Apartment> apartments = apartmentStorage.getApartments();
 
-            List<Apartment> apartments = apartmentStorage.getApartments();
-
-            assertNotNull(apartments);
-            assertEquals(1, apartments.size());
-            assertEquals(mockapartment.getId(), apartments.get(0).getId());
-        }
+        assertEquals(mockApartments.size(), apartments.size());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
     @Test
-    public void addApartment_AddApartmentInstanceToDB() throws SQLException {
-        try(MockedStatic<DataSource> sourceMockedStatic = mockStatic(DataSource.class)) {
-            sourceMockedStatic.when(DataSource::getConnection).thenReturn(connection);
-            Apartment apartment = new Apartment();
-            apartment.setId(1);
-            apartment.setPrice(1200.50);
-            apartment.setIsReserved(false);
+    public void addApartment_AddApartmentInstanceToDB(){
+        Apartment apartment = new Apartment(5000);
 
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeUpdate()).thenReturn(1);
+        when(session.beginTransaction()).thenReturn(transaction);
 
-            apartmentStorage.addApartment(apartment);
+        apartmentStorage.addApartment(apartment);
 
-            verify(connection, times(1)).prepareStatement(anyString());
-            verify(preparedStatement, times(1)).setLong(1, apartment.getId());
-            verify(preparedStatement, times(1)).setDouble(2, apartment.getPrice());
-            verify(preparedStatement, times(1)).setBoolean(3, apartment.getIsReserved());
-            verify(preparedStatement, times(1)).setNull(4, Types.BIGINT);
-            verify(preparedStatement, times(1)).executeUpdate();
-        }
+        verify(sessionFactory).openSession();
+        verify(session).persist(apartment);
+        verify(transaction).commit();
+        verify(session).close();
     }
 
     @Test
-    void updateApartment() throws SQLException {
-        try(MockedStatic<DataSource> sourceMockedStatic = mockStatic(DataSource.class)) {
-            sourceMockedStatic.when(DataSource::getConnection).thenReturn(connection);
-            // Arrange
-            Apartment apartment = new Apartment();
-            apartment.setId(1);
-            apartment.setPrice(1500.00);
-            apartment.setIsReserved(true);
-            apartment.setReservedBy(new User(2, "Alice"));
-            apartment.setCreatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
-            apartment.setUpdatedAt(ZonedDateTime.now(ZoneId.systemDefault()));
+    void updateApartment(){
+        Apartment apartment = new Apartment(5000);
 
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeUpdate()).thenReturn(1);
+        when(session.beginTransaction()).thenReturn(transaction);
 
-            apartmentStorage.updateApartment(apartment);
+        apartmentStorage.updateApartment(apartment);
 
-            verify(connection, times(1)).prepareStatement(anyString());
-            verify(preparedStatement, times(1)).setLong(1, apartment.getId());
-            verify(preparedStatement, times(1)).setDouble(2, apartment.getPrice());
-            verify(preparedStatement, times(1)).setBoolean(3, apartment.getIsReserved());
-            verify(preparedStatement, times(1)).setLong(4, apartment.getReservedBy().getId());
-            verify(preparedStatement, times(1)).setTimestamp(5, Timestamp.from(apartment.getCreatedAt().toInstant()));
-            verify(preparedStatement, times(1)).setTimestamp(6, Timestamp.from(apartment.getUpdatedAt().toInstant()));
-            verify(preparedStatement, times(1)).executeUpdate();
-        }
+        verify(sessionFactory).openSession();
+        verify(session).merge(apartment);
+        verify(transaction).commit();
+        verify(session).close();
     }
 
     @Test
-    public void sortApartmentByPrice_returnSortedList() throws SQLException {
-        try(MockedStatic<DataSource> sourceMockedStatic = mockStatic(DataSource.class)) {
-            sourceMockedStatic.when(DataSource::getConnection).thenReturn(connection);
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
+    public void sortApartmentByPrice_returnSortedList(){
+        List<Apartment> apartments = getPreparedApartment();
 
-            List<Apartment> expectedApartments = mockApartmentList();
+        when(session.createQuery(SORT_BY_PRICE_HQL, Apartment.class)).thenReturn(mock(Query.class));
+        Query<Apartment> mockQuery = mock(Query.class);
+        when(session.createQuery(SORT_BY_PRICE_HQL, Apartment.class)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(apartments);
 
-            when(resultSet.next())
-                    .thenReturn(true, true, false);
-            mockApartmentResultSetBehavior();
 
-            List<Apartment> actualApartments = apartmentStorage.sortApartmentByPrice();
+        List<Apartment> sortApartmentByPrice = apartmentStorage.sortApartmentByPrice();
 
-            assertEquals(expectedApartments.size(), actualApartments.size());
-            verify(connection, times(1)).prepareStatement(anyString());
-            verify(preparedStatement, times(1)).executeQuery();
-        }
+        assertEquals(apartments.size(), sortApartmentByPrice.size());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
     @Test
-    public void sortApartmentById_returnSortedList() throws SQLException {
-        try(MockedStatic<DataSource> sourceMockedStatic = mockStatic(DataSource.class)) {
-            sourceMockedStatic.when(DataSource::getConnection).thenReturn(connection);
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
+    public void sortApartmentById_returnSortedList(){
+        List<Apartment> apartments = getPreparedApartment();
 
-            List<Apartment> expectedApartments = mockApartmentList();
+        when(session.createQuery(SORTED_BY_ID_HQL, Apartment.class)).thenReturn(mock(Query.class));
+        Query<Apartment> mockQuery = mock(Query.class);
+        when(session.createQuery(SORTED_BY_ID_HQL, Apartment.class)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(apartments);
 
-            when(resultSet.next())
-                    .thenReturn(true, true, false);
-            mockApartmentResultSetBehavior();
+        List<Apartment> sortApartmentById = apartmentStorage.sortApartmentById();
 
-            List<Apartment> actualApartments = apartmentStorage.sortApartmentById();
-
-            assertEquals(expectedApartments.size(), actualApartments.size());
-            verify(connection, times(1)).prepareStatement(anyString());
-            verify(preparedStatement, times(1)).executeQuery();
-        }
+        assertEquals(apartments.size(), sortApartmentById.size());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
     @Test
-    public void sortApartmentByClientName_returnSortedList() throws SQLException {
-        try(MockedStatic<DataSource> sourceMockedStatic = mockStatic(DataSource.class)) {
-            sourceMockedStatic.when(DataSource::getConnection).thenReturn(connection);
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
+    public void sortApartmentByClientName_returnSortedList(){
+        List<Apartment> apartments = getPreparedApartment();
 
-            List<Apartment> expectedApartments = mockApartmentList();
+        when(session.createQuery(SORT_BY_USERNAME_HQL, Apartment.class)).thenReturn(mock(Query.class));
+        Query<Apartment> mockQuery = mock(Query.class);
+        when(session.createQuery(SORT_BY_USERNAME_HQL, Apartment.class)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(apartments);
 
-            when(resultSet.next())
-                    .thenReturn(true, true, false);
-            mockApartmentResultSetBehavior();
+        List<Apartment> sortApartmentByClientName = apartmentStorage.sortApartmentByClientName();
 
-            List<Apartment> actualApartments = apartmentStorage.sortApartmentByClientName();
-
-            assertEquals(expectedApartments.size(), actualApartments.size());
-            verify(connection, times(1)).prepareStatement(anyString());
-            verify(preparedStatement, times(1)).executeQuery();
-        }
+        assertEquals(apartments.size(), sortApartmentByClientName.size());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
     @Test
-    public void sortedApartmentByReservationStatus_returnSortedList() throws SQLException {
-        try(MockedStatic<DataSource> sourceMockedStatic = mockStatic(DataSource.class)) {
-            sourceMockedStatic.when(DataSource::getConnection).thenReturn(connection);
-            when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
+    public void sortedApartmentByReservationStatus_returnSortedList(){
+        List<Apartment> apartments = getPreparedApartment();
 
-            List<Apartment> expectedApartments = mockApartmentList();
+        when(session.createQuery(SORT_BY_RESERVATION_STATUS_HQL, Apartment.class)).thenReturn(mock(Query.class));
+        Query<Apartment> mockQuery = mock(Query.class);
+        when(session.createQuery(SORT_BY_RESERVATION_STATUS_HQL, Apartment.class)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(apartments);;
 
-            when(resultSet.next()).thenReturn(true, true, false);
-            mockApartmentResultSetBehavior();
+        List<Apartment> sorteded = apartmentStorage.sortedApartmentByReservationStatus();
 
-            List<Apartment> actualApartments = apartmentStorage.sortedApartmentByReservationStatus();
-
-            assertEquals(expectedApartments.size(), actualApartments.size());
-            verify(connection, times(1)).prepareStatement(anyString());
-            verify(preparedStatement, times(1)).executeQuery();
-        }
+        assertEquals(apartments.size(), sorteded.size());
+        verify(sessionFactory).openSession();
+        verify(session).close();
     }
 
-    private void mockApartmentResultSetBehavior() throws SQLException {
-        when(resultSet.getInt(1)).thenReturn(1, 2);
-        when(resultSet.getDouble(2)).thenReturn(1500.75, 1600.50);
-        when(resultSet.getBoolean(3)).thenReturn(true, false);
-        when(resultSet.getLong(4)).thenReturn(1L, 2L);
-        when(resultSet.getTimestamp(5)).thenReturn(
-                Timestamp.valueOf("2024-11-18 10:00:00"),
-                Timestamp.valueOf("2024-11-13 10:00:00")
-        );
-        when(resultSet.getTimestamp(6)).thenReturn(
-                Timestamp.valueOf("2024-01-01 12:00:00"),
-                Timestamp.valueOf("2024-02-01 12:00:00")
-        );
-        when(resultSet.getLong(7)).thenReturn(1L, 2L);
-        when(resultSet.getString(8)).thenReturn("Alice", "Bob");
-        when(resultSet.getString(9)).thenReturn("Stark", "John");
-        when(resultSet.getString(10)).thenReturn(String.valueOf(UserRole.USER),String.valueOf(UserRole.USER));
-        when(resultSet.getTimestamp(11)).thenReturn(
-                Timestamp.valueOf("2024-11-18 10:00:00"),
-                Timestamp.valueOf("2024-11-13 10:00:00"));
-        when(resultSet.getTimestamp(12)).thenReturn(
-                Timestamp.valueOf("2024-01-01 12:00:00"),
-                Timestamp.valueOf("2024-02-01 12:00:00"));
-    }
-
-    private List<Apartment> mockApartmentList() {
+    private List<Apartment> getPreparedApartment(){
         List<Apartment> apartments = new ArrayList<>();
-        User user = new User(1, "Alice");
-        user.setLastName("Stark");
-        user.setUserRole(UserRole.USER);
-        Apartment apartment1 = new Apartment();
-        apartment1.setId(1);
-        apartment1.setPrice(1500.75);
-        apartment1.setIsReserved(true);
-        apartment1.setReservedBy(user);
-        apartment1.setCreatedAt(Timestamp.valueOf("2024-02-01 10:00:00")
-                .toInstant().atZone(ZoneId.systemDefault()));
-        apartment1.setUpdatedAt(Timestamp.valueOf("2024-02-01 12:00:00")
-                .toInstant().atZone(ZoneId.systemDefault()));
-        apartments.add(apartment1);
 
-        Apartment apartment2 = new Apartment();
-        User user2 = new User(1, "Bob");
-        user2.setLastName("John");
-        user2.setUserRole(UserRole.USER);
-        apartment2.setId(2);
-        apartment2.setPrice(1600.50);
-        apartment2.setIsReserved(true);
-        apartment2.setReservedBy(user2);
-        apartment2.setCreatedAt(Timestamp.valueOf("2024-01-01 10:00:00")
-                .toInstant().atZone(ZoneId.systemDefault()));
-        apartment2.setUpdatedAt(Timestamp.valueOf("2024-01-01 12:00:00")
-                .toInstant().atZone(ZoneId.systemDefault()));
-        apartments.add(apartment2);
+        Apartment aliceApartment = new Apartment(1000);
+        Apartment bobsApartment = new Apartment(2000);
+        Apartment johnsApartment = new Apartment(3000);
+
+        User alice = new User(1, "Alice");
+        User bob = new User(2, "Bob");
+        User john = new User(3, "John");
+
+        aliceApartment.setUser(alice);
+        aliceApartment.setReserved(true);
+        bobsApartment.setUser(bob);
+        bobsApartment.setReserved(true);
+        johnsApartment.setUser(john);
+        johnsApartment.setReserved(true);
+
+        apartments.add(aliceApartment);
+        apartments.add(bobsApartment);
+        apartments.add(johnsApartment);
 
         return apartments;
     }

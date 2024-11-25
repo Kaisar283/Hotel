@@ -53,8 +53,8 @@ class SortApartmentServletTest {
         ));
 
         List<Apartment> sortedApartments = List.of(
-                new Apartment(1, 1000.0),
-                new Apartment(2, 2000.0)
+                new Apartment(1000.0),
+                new Apartment(2000.0)
         );
         when(apartmentService.getApartmentsSortedByPrice(1, 5)).thenReturn(sortedApartments);
 
@@ -74,8 +74,8 @@ class SortApartmentServletTest {
         ));
 
         List<Apartment> sortedApartments = List.of(
-                new Apartment(1, 1500.0),
-                new Apartment(2, 3000.0)
+                new Apartment(1500.0),
+                new Apartment(3000.0)
         );
         when(apartmentService.getApartmentsSortedById(1, 5)).thenReturn(sortedApartments);
 
@@ -95,8 +95,8 @@ class SortApartmentServletTest {
         ));
 
         List<Apartment> sortedApartments = List.of(
-                new Apartment(1, 1000.0),
-                new Apartment(2, 2000.0)
+                new Apartment(1000.0),
+                new Apartment(2000.0)
         );
         when(apartmentService.getApartmentSortedByReservationStatus(1, 5)).thenReturn(sortedApartments);
 
